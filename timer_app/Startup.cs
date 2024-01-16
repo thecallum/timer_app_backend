@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using timer_app.Infrastructure;
+
 namespace timer_app;
 
 public class Startup
@@ -13,6 +16,23 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers();
+
+        ConfigureDbContext(services);
+    }
+
+    static void ConfigureDbContext(IServiceCollection services)
+    {
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            //throw new InvalidOperationException($"The required environment variable 'CONNECTION_STRING' is not set.");
+        }
+
+        services.AddDbContext<TimerAppContext>(
+            opt => opt
+                .UseNpgsql(connectionString)
+        );
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
