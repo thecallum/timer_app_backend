@@ -12,7 +12,7 @@ namespace timer_app.Infrastructure
         public string Description { get; set; }
         public string DisplayColour { get; set; }
 
-        //public virtual List<CalendarEvent> CalendarEvents { get; set; }
+        public virtual List<CalendarEvent> CalendarEvents { get; set; }
 
     }
 }

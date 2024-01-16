@@ -41,12 +41,14 @@ namespace timer_app_tests.GatewayTests
             var numberOfProjects = _randm.Next(2, 10);
             var projects = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
+                .Without(x => x.CalendarEvents)
                 .CreateMany(numberOfProjects);
 
             MockDbContext.Instance.Projects.AddRange(projects);
 
             var projectOwnedByOtherUser = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
+                .Without(x => x.CalendarEvents)
                 .Create();
 
             MockDbContext.Instance.Projects.Add(projectOwnedByOtherUser);
@@ -70,6 +72,7 @@ namespace timer_app_tests.GatewayTests
             var numberOfProjects = _randm.Next(2, 10);
             var projects = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
+                .Without(x => x.CalendarEvents)
                 .CreateMany(numberOfProjects);
 
             MockDbContext.Instance.Projects.AddRange(projects);
@@ -88,7 +91,9 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            var project = _fixture.Create<Project>();
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .Create();
 
             // Act
             var result = await _classUnderTest.CreateProject(project, userId);
@@ -109,7 +114,9 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            var project = _fixture.Create<Project>();
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .Create();
 
             // Act
             var result = await _classUnderTest.UpdateProject(project, userId);
@@ -123,7 +130,9 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            var project = _fixture.Create<Project>();
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .Create();
 
             MockDbContext.Instance.Projects.Add(project);
             await MockDbContext.Instance.SaveChangesAsync();
@@ -142,6 +151,7 @@ namespace timer_app_tests.GatewayTests
             var userId = _fixture.Create<int>();
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
+                .Without(x => x.CalendarEvents)
                 .Create();
 
             MockDbContext.Instance.Projects.Add(project);
@@ -167,14 +177,6 @@ namespace timer_app_tests.GatewayTests
             dbResponse.Should().BeEquivalentTo(projectWithUpdates);
         }
 
-
-
-
-        // DeleteProject
-        // - WhenProjectNotFound_ReturnsFalse
-        // - WhenUserDoesntOwnProject_ThrowsUnauthorizedException
-        // - WhenCalled_DeletesProject_ReturnsTrue
-
         [Test]
         public async Task Delete_WhenProjectNotFound_ReturnsFalse()
         {
@@ -194,7 +196,9 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            var project = _fixture.Create<Project>();
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .Create();
 
             MockDbContext.Instance.Projects.Add(project);
             await MockDbContext.Instance.SaveChangesAsync();
@@ -213,6 +217,7 @@ namespace timer_app_tests.GatewayTests
             var userId = _fixture.Create<int>();
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
+                .Without(x => x.CalendarEvents)
                 .Create();
 
             MockDbContext.Instance.Projects.Add(project);
@@ -227,6 +232,5 @@ namespace timer_app_tests.GatewayTests
             var dbResponse = await MockDbContext.Instance.Projects.FindAsync(project.Id);
             dbResponse.Should().BeNull();
         }
-
     }
 }
