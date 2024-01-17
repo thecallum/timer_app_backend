@@ -1,7 +1,7 @@
 ﻿using AutoFixture;
 using FluentAssertions;
-using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.Extensions.Logging;
+using timer_app.Boundary.Request;
+using timer_app.Factories;
 using timer_app.Gateway;
 using timer_app.Infrastructure;
 using timer_app.Infrastructure.Exceptions;
@@ -157,18 +157,16 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-
-            var calendarEvent = _fixture.Build<CalendarEvent>()
-                .Without(x => x.Project)
+            var request = _fixture.Build<CreateEventRequest>()
                 .Without(x => x.ProjectId)
                 .Create();
 
             // Act
-            var result = await _classUnderTest.CreateEvent(calendarEvent, userId);
+            var result = await _classUnderTest.CreateEvent(request, userId);
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeEquivalentTo(calendarEvent);
+            result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id));
 
             var dbResult = await MockDbContext.Instance.CalendarEvents.FindAsync(result.Id);
             dbResult.Should().NotBeNull();
@@ -182,13 +180,10 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-
-            var calendarEvent = _fixture.Build<CalendarEvent>()
-                .Without(x => x.Project)
-                .Create();
+            var request = _fixture.Create<CreateEventRequest>();
 
             // Act
-            Func<Task> func = async () => await _classUnderTest.CreateEvent(calendarEvent, userId);
+            Func<Task> func = async () => await _classUnderTest.CreateEvent(request, userId);
 
             // Assert
             await func.Should().ThrowAsync<ProjectNotFoundException>();
@@ -207,16 +202,15 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.Projects.Add(project);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var calendarEvent = _fixture.Build<CalendarEvent>()
-                .Without(x => x.Project)
+            var request = _fixture.Build<CreateEventRequest>()
                 .With(x => x.ProjectId, project.Id)
                 .Create();
 
             // Act
-            Func<Task> func = async () => await _classUnderTest.CreateEvent(calendarEvent, userId);
+            Func<Task> func = async () => await _classUnderTest.CreateEvent(request, userId);
 
             // Assert
-            await func.Should().ThrowAsync<UserUnauthorizedException>();
+            await func.Should().ThrowAsync<UserUnauthorizedToAccessProjectException>();
         }
 
         [Test]
@@ -233,17 +227,17 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.Projects.Add(project);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var calendarEvent = _fixture.Build<CalendarEvent>()
-                .Without(x => x.Project)
+            var request = _fixture.Build<CreateEventRequest>()
                 .With(x => x.ProjectId, project.Id)
                 .Create();
 
             // Act
-            var result = await _classUnderTest.CreateEvent(calendarEvent, userId);
+            var result = await _classUnderTest.CreateEvent(request, userId);
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeEquivalentTo(calendarEvent);
+            result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id).Excluding(x => x.Project));
+            result.Project.Should().BeEquivalentTo(project.ToResponse());
 
             var dbResult = await MockDbContext.Instance.CalendarEvents.FindAsync(result.Id);
             dbResult.Should().NotBeNull();
@@ -257,17 +251,17 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            
-            var calendarEvent = _fixture.Build<CalendarEvent>()
-                .Without(x => x.Project)
-                .Without(x => x.ProjectId)
-                .Create();
-            
+            var calendarEventId = _fixture.Create<int>();
+
+            var request = _fixture.Build<UpdateEventRequest>()
+               .Without(x => x.ProjectId)
+               .Create();
+
             // Act
-            var response = await _classUnderTest.UpdateEvent(calendarEvent, userId);
+            var response = await _classUnderTest.UpdateEvent(calendarEventId, request, userId);
 
             // Assert
-            response.Should().BeFalse();
+            response.Should().BeNull();
         }
 
         [Test]
@@ -276,6 +270,10 @@ namespace timer_app_tests.GatewayTests
             // Arrange
             var userId = _fixture.Create<int>();
             var otherUserId = userId + 1;
+
+            var request = _fixture.Build<UpdateEventRequest>()
+               .Without(x => x.ProjectId)
+               .Create();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, otherUserId)
@@ -287,10 +285,10 @@ namespace timer_app_tests.GatewayTests
             await MockDbContext.Instance.SaveChangesAsync();
 
             // Act
-            Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent, userId);
+            Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
-            await task.Should().ThrowAsync<UserUnauthorizedException>();
+            await task.Should().ThrowAsync<UserUnauthorizedToAccessEventException>();
         }
 
         [Test]
@@ -308,25 +306,30 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var updatedEvent = new CalendarEvent
-            {
-                Id = calendarEvent.Id,
-                Description = "new description",
-                UserId = userId,
-                EndTime = DateTime.UtcNow,
-                StartTime = DateTime.UtcNow,
-            };
+            var request = _fixture.Build<UpdateEventRequest>()
+               .Without(x => x.ProjectId)
+               .Create();
 
             // Act
-            var response = await _classUnderTest.UpdateEvent(updatedEvent, userId);
+            var response = await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
-            response.Should().BeTrue();
+            var expectedResponse = new CalendarEvent
+            {
+                Id = calendarEvent.Id,
+                Description = request.Description,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                UserId = userId,
+                Project = null
+            };
+
+            response.Should().BeEquivalentTo(expectedResponse.ToResponse());
 
             var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
             dbResponse.Should().NotBeNull();
 
-            dbResponse.Should().BeEquivalentTo(updatedEvent);
+            dbResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
         [Test]
@@ -352,18 +355,15 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var updatedEvent = new CalendarEvent
-            {
-                Id = calendarEvent.Id,
-                UserId = userId,
-                ProjectId = null
-            };
+            var request = _fixture.Build<UpdateEventRequest>()
+               .Without(x => x.ProjectId)
+               .Create();
 
             // Act
-            var response = await _classUnderTest.UpdateEvent(updatedEvent, userId);
+            var response = await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
-            response.Should().BeTrue();
+            response.Project.Should().BeNull();
 
             var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
             dbResponse.Should().NotBeNull();
@@ -388,15 +388,12 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var updatedEvent = new CalendarEvent
-            {
-                Id = calendarEvent.Id,
-                UserId = userId,
-                ProjectId = projectId
-            };
+            var request = _fixture.Build<UpdateEventRequest>()
+               .With(x => x.ProjectId, projectId)
+               .Create();
 
             // Act
-            Func<Task> task = async () => await _classUnderTest.UpdateEvent(updatedEvent, userId);
+            Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
             await task.Should().ThrowAsync<ProjectNotFoundException>();
@@ -426,18 +423,15 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var updatedEvent = new CalendarEvent
-            {
-                Id = calendarEvent.Id,
-                UserId = userId,
-                ProjectId = project.Id
-            };
+            var request = _fixture.Build<UpdateEventRequest>()
+               .With(x => x.ProjectId, project.Id)
+               .Create();
 
             // Act
-            Func<Task> task = async () => await _classUnderTest.UpdateEvent(updatedEvent, userId);
+            Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
-            await task.Should().ThrowAsync<UserUnauthorizedException>();
+            await task.Should().ThrowAsync<UserUnauthorizedToAccessProjectException>();
         }
 
         [Test]
@@ -463,18 +457,15 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var updatedEvent = new CalendarEvent
-            {
-                Id = calendarEvent.Id,
-                UserId = userId,
-                ProjectId = project.Id
-            };
+            var request = _fixture.Build<UpdateEventRequest>()
+               .With(x => x.ProjectId, project.Id)
+               .Create();
 
             // Act
-            var response = await _classUnderTest.UpdateEvent(updatedEvent, userId);
+            var response = await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
-            response.Should().BeTrue();
+            response.Project.Should().BeEquivalentTo(project.ToResponse());
 
             var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
             dbResponse.Should().NotBeNull();
@@ -516,7 +507,7 @@ namespace timer_app_tests.GatewayTests
             Func<Task> func = async () => await _classUnderTest.DeleteEvent(calendarEvent.Id, userId);
 
             // Assert
-            await func.Should().ThrowAsync<UserUnauthorizedException>();
+            await func.Should().ThrowAsync<UserUnauthorizedToAccessEventException>();
         }
 
         [Test]

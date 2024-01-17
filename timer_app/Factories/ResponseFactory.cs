@@ -19,5 +19,22 @@ namespace timer_app.Factories
                 DisplayColour = db.DisplayColour,
             };
         }
+
+        public static IEnumerable<CalendarEventResponse> ToResponse(this IEnumerable<CalendarEvent> db)
+        {
+            return db.Select(x => x.ToResponse());
+        }
+
+        public static CalendarEventResponse ToResponse(this CalendarEvent db)
+        {
+            return new CalendarEventResponse
+            {
+                Id = db.Id,
+                Project = db.Project?.ToResponse(),
+                StartTime = db.StartTime,
+                EndTime = db.EndTime,
+                Description = db.Description,
+            };
+        }
     }
 }

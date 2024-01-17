@@ -44,7 +44,7 @@ namespace timer_app.Controllers
 
                 return NoContent();
             }
-            catch (UserUnauthorizedException e)
+            catch (UserUnauthorizedToAccessProjectException e)
             {
                 return Unauthorized(e.Message);
             }
@@ -56,12 +56,12 @@ namespace timer_app.Controllers
         {
             try
             {
-                var response = _updateProjectUseCase.ExecuteAsync(query.ProjectId, request, PlaceholderUserId);
+                var response = await _updateProjectUseCase.ExecuteAsync(query.ProjectId, request, PlaceholderUserId);
                 if (response == null) return NotFound(query.ProjectId);
 
                 return Ok(response);
             }
-            catch (UserUnauthorizedException e)
+            catch (UserUnauthorizedToAccessProjectException e)
             {
                 return Unauthorized(e.Message);
             }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using timer_app.Boundary.Request;
+using timer_app.Factories;
 using timer_app.Gateway.Interfaces;
 using timer_app.Infrastructure;
 using timer_app.Infrastructure.Exceptions;
@@ -25,9 +26,9 @@ namespace timer_app.Gateway
             return projects;
         }
 
-        public async Task<Project> CreateProject(Project project, int userId)
+        public async Task<Project> CreateProject(CreateProjectRequest request, int userId)
         {
-            project.UserId = userId;
+            var project = request.ToDb(userId);
 
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
@@ -42,7 +43,7 @@ namespace timer_app.Gateway
 
             if (existingProject.UserId != userId)
             {
-                throw new UserUnauthorizedException(userId);
+                throw new UserUnauthorizedToAccessProjectException(userId);
             }
 
             // Map through project fields
@@ -61,7 +62,7 @@ namespace timer_app.Gateway
 
             if (project.UserId != userId)
             {
-                throw new UserUnauthorizedException(userId);
+                throw new UserUnauthorizedToAccessProjectException(userId);
             }
 
             _context.Projects.Remove(project);

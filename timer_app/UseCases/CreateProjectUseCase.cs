@@ -17,9 +17,7 @@ namespace timer_app.UseCases
 
         public async Task<ProjectResponse> ExecuteAsync(CreateProjectRequest request, int userId)
         {
-            var project = request.ToDb();
-
-            var createdProject = await _gateway.CreateProject(project, userId);
+            var createdProject = await _gateway.CreateProject(request, userId);
 
             return createdProject.ToResponse();
         }

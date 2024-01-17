@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using timer_app.Boundary.Request;
+using timer_app.Factories;
 using timer_app.Gateway.Interfaces;
 using timer_app.Infrastructure;
 using timer_app.Infrastructure.Exceptions;
@@ -8,7 +10,6 @@ namespace timer_app.Gateway
     public class CalendarEventsGateway : ICalendarEventsGateway
     {
         private readonly TimerAppContext _context;
-
 
         public CalendarEventsGateway(TimerAppContext context)
         {
@@ -26,15 +27,15 @@ namespace timer_app.Gateway
             return calendarEvents;
         }
 
-        public async Task<CalendarEvent> CreateEvent(CalendarEvent calendarEvent, int userId)
+        public async Task<CalendarEvent> CreateEvent(CreateEventRequest request, int userId)
         {
-            if (calendarEvent.ProjectId != null)
+            if (request.ProjectId != null)
             {
-                var project = await _context.Projects.FindAsync(calendarEvent.ProjectId);
-                await VerifyProject(project, (int)calendarEvent.ProjectId, userId);
+                var project = await _context.Projects.FindAsync(request.ProjectId);
+                VerifyProject(project, (int)request.ProjectId, userId);
             }
 
-            calendarEvent.UserId = userId;
+            var calendarEvent = request.ToDb(userId);
 
             _context.CalendarEvents.Add(calendarEvent);
             await _context.SaveChangesAsync();
@@ -42,49 +43,49 @@ namespace timer_app.Gateway
             return calendarEvent;
         }
 
-        private async Task VerifyProject(Project project, int projectId, int userId)
+        private static void VerifyProject(Project project, int projectId, int userId)
         {
             // verify project exists
-            if (project == null) throw new ProjectNotFoundException((int) projectId);
+            if (project == null) throw new ProjectNotFoundException((int)projectId);
 
             // verify user owns project
-            if (project.UserId != userId) throw new UserUnauthorizedException(userId);
+            if (project.UserId != userId) throw new UserUnauthorizedToAccessProjectException(userId);
         }
 
-        public async Task<bool> UpdateEvent(CalendarEvent calendarEvent, int userId)
+        public async Task<CalendarEvent> UpdateEvent(int calendarEventId, UpdateEventRequest request, int userId)
         {
-            var existingCalendarEvent = await _context.CalendarEvents.FindAsync(calendarEvent.Id);
-            if (existingCalendarEvent == null) return false;
+            var existingCalendarEvent = await _context.CalendarEvents.FindAsync(calendarEventId);
+            if (existingCalendarEvent == null) return null;
 
-            if (calendarEvent.UserId != userId)
+            if (existingCalendarEvent.UserId != userId)
             {
-                throw new UserUnauthorizedException(userId);
+                throw new UserUnauthorizedToAccessEventException(userId);
             }
 
             // Map through event fields
-            existingCalendarEvent.Description = calendarEvent.Description;
-            existingCalendarEvent.StartTime = calendarEvent.StartTime;
-            existingCalendarEvent.EndTime = calendarEvent.EndTime;
+            existingCalendarEvent.Description = request.Description;
+            existingCalendarEvent.StartTime = request.StartTime;
+            existingCalendarEvent.EndTime = request.EndTime;
 
-            if (calendarEvent.ProjectId == null && existingCalendarEvent.ProjectId != null)
+            if (request.ProjectId == null && existingCalendarEvent.ProjectId != null)
             {
                 // remove project
                 existingCalendarEvent.Project = null;
             }
 
-            if (calendarEvent.ProjectId != null && calendarEvent.ProjectId != existingCalendarEvent.ProjectId)
+            if (request.ProjectId != null && existingCalendarEvent.ProjectId != request.ProjectId)
             {
                 // Add project
-                var project = await _context.Projects.FindAsync(calendarEvent.ProjectId);
+                var project = await _context.Projects.FindAsync(request.ProjectId);
 
-                await VerifyProject(project, (int)calendarEvent.ProjectId, userId);
+                VerifyProject(project, (int)request.ProjectId, userId);
 
                 existingCalendarEvent.Project = project;
             }
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return existingCalendarEvent;
         }
 
         public async Task<bool> DeleteEvent(int calendarEventId, int userId)
@@ -94,7 +95,7 @@ namespace timer_app.Gateway
 
             if (calendarEvent.UserId != userId)
             {
-                throw new UserUnauthorizedException(userId);
+                throw new UserUnauthorizedToAccessEventException(userId);
             }
 
             _context.Remove(calendarEvent);

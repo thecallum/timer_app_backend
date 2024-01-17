@@ -87,12 +87,10 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            var project = _fixture.Build<Project>()
-                .Without(x => x.CalendarEvents)
-                .Create();
+            var request = _fixture.Create<CreateProjectRequest>();
 
             // Act
-            var result = await _classUnderTest.CreateProject(project, userId);
+            var result = await _classUnderTest.CreateProject(request, userId);
 
             // Assert
             result.Should().NotBeNull();
@@ -138,7 +136,7 @@ namespace timer_app_tests.GatewayTests
             Func<Task> task = async () => await _classUnderTest.UpdateProject(project.Id, request, userId);
 
             // Assert
-            await task.Should().ThrowAsync<UserUnauthorizedException>();
+            await task.Should().ThrowAsync<UserUnauthorizedToAccessProjectException>();
         }
 
         [Test]
@@ -203,7 +201,7 @@ namespace timer_app_tests.GatewayTests
             Func<Task> task = async () => await _classUnderTest.DeleteProject(project.Id, userId);
 
             // Assert
-            await task.Should().ThrowAsync<UserUnauthorizedException>();
+            await task.Should().ThrowAsync<UserUnauthorizedToAccessProjectException>();
         }
 
         [Test]
