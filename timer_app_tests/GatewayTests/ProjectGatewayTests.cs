@@ -40,16 +40,13 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .CreateMany(numberOfProjects);
 
-            MockDbContext.Instance.Projects.AddRange(projects);
-
             var projectOwnedByOtherUser = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(projectOwnedByOtherUser);
-
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(projectOwnedByOtherUser);
+            await GatewayTestHelpers.AddProjectsToDb(projects.ToArray());
 
             // Act
             var results = await _classUnderTest.GetAllProjects(userId);
@@ -71,9 +68,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .CreateMany(numberOfProjects);
 
-            MockDbContext.Instance.Projects.AddRange(projects);
-
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(projects.ToArray());
 
             // Act
             var results = await _classUnderTest.GetAllProjects(userId);
@@ -96,7 +91,7 @@ namespace timer_app_tests.GatewayTests
             result.Should().NotBeNull();
             result.UserId.Should().Be(userId);
 
-            var dbResponse = await MockDbContext.Instance.Projects.FindAsync(result.Id);
+            var dbResponse = await GatewayTestHelpers.GetProject(result.Id);
             dbResponse.Should().NotBeNull();
 
             dbResponse.Should().BeEquivalentTo(result);
@@ -127,8 +122,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var request = new UpdateProjectRequest();
 
@@ -149,8 +143,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var request = _fixture.Create<UpdateProjectRequest>();
 
@@ -161,9 +154,9 @@ namespace timer_app_tests.GatewayTests
             result.Should().NotBeNull();
 
             result.Description.Should().Be(request.Description);
-            result.DisplayColour.Should().Be(request.DisplayColour);            
+            result.DisplayColour.Should().Be(request.DisplayColour);
 
-            var dbResponse = await MockDbContext.Instance.Projects.FindAsync(project.Id);
+            var dbResponse = await GatewayTestHelpers.GetProject(project.Id);
             dbResponse.Should().NotBeNull();
 
             dbResponse.Description.Should().Be(request.Description);
@@ -194,8 +187,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             // Act
             Func<Task> task = async () => await _classUnderTest.DeleteProject(project.Id, userId);
@@ -214,8 +206,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             // Act
             var result = await _classUnderTest.DeleteProject(project.Id, userId);
@@ -223,7 +214,7 @@ namespace timer_app_tests.GatewayTests
             // Assert
             result.Should().BeTrue();
 
-            var dbResponse = await MockDbContext.Instance.Projects.FindAsync(project.Id);
+            var dbResponse = await GatewayTestHelpers.GetProject(project.Id);
             dbResponse.Should().BeNull();
         }
     }

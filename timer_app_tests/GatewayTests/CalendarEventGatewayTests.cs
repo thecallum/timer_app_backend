@@ -65,11 +65,10 @@ namespace timer_app_tests.GatewayTests
                 .With(x => x.EndTime, startTime.AddHours(2))
                 .Without(x => x.Project)
                 .Create();
-            
 
-            MockDbContext.Instance.CalendarEvents.AddRange(events);
-            MockDbContext.Instance.CalendarEvents.Add(eventForAnotherUser);
-            await MockDbContext.Instance.SaveChangesAsync();
+
+            await GatewayTestHelpers.AddEventsToDb(events.ToArray());
+            await GatewayTestHelpers.AddEventsToDb(eventForAnotherUser);
 
             // Act
             var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
@@ -92,8 +91,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
@@ -103,8 +101,7 @@ namespace timer_app_tests.GatewayTests
                 .With(x => x.ProjectId, project.Id)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             // Act
             var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
@@ -140,8 +137,7 @@ namespace timer_app_tests.GatewayTests
             calendarEvents[1].StartTime = startTime.AddDays(2);
             calendarEvents[1].EndTime = startTime.AddDays(3);
 
-            MockDbContext.Instance.CalendarEvents.AddRange(calendarEvents);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvents.ToArray());
 
             // Act
             var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
@@ -168,7 +164,7 @@ namespace timer_app_tests.GatewayTests
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id));
 
-            var dbResult = await MockDbContext.Instance.CalendarEvents.FindAsync(result.Id);
+            var dbResult = await GatewayTestHelpers.GetEvent(result.Id);
             dbResult.Should().NotBeNull();
             dbResult.Should().BeEquivalentTo(result);
 
@@ -199,8 +195,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var request = _fixture.Build<CreateEventRequest>()
                 .With(x => x.ProjectId, project.Id)
@@ -224,8 +219,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var request = _fixture.Build<CreateEventRequest>()
                 .With(x => x.ProjectId, project.Id)
@@ -239,7 +233,7 @@ namespace timer_app_tests.GatewayTests
             result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id).Excluding(x => x.Project));
             result.Project.Should().BeEquivalentTo(project.ToResponse());
 
-            var dbResult = await MockDbContext.Instance.CalendarEvents.FindAsync(result.Id);
+            var dbResult = await GatewayTestHelpers.GetEvent(result.Id);
             dbResult.Should().NotBeNull();
            
             dbResult.Project.Should().NotBeNull();
@@ -281,8 +275,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.ProjectId)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             // Act
             Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
@@ -303,8 +296,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.ProjectId)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             var request = _fixture.Build<UpdateEventRequest>()
                .Without(x => x.ProjectId)
@@ -326,10 +318,9 @@ namespace timer_app_tests.GatewayTests
 
             response.Should().BeEquivalentTo(expectedResponse.ToResponse());
 
-            var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
-            dbResponse.Should().NotBeNull();
-
-            dbResponse.Should().BeEquivalentTo(expectedResponse);
+            var dbResult = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
+            dbResult.Should().NotBeNull();
+            dbResult.Should().BeEquivalentTo(expectedResponse);
         }
 
         [Test]
@@ -343,8 +334,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
@@ -352,8 +342,7 @@ namespace timer_app_tests.GatewayTests
                 .With(x => x.ProjectId, project.Id)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             var request = _fixture.Build<UpdateEventRequest>()
                .Without(x => x.ProjectId)
@@ -365,11 +354,11 @@ namespace timer_app_tests.GatewayTests
             // Assert
             response.Project.Should().BeNull();
 
-            var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
-            dbResponse.Should().NotBeNull();
+            var dbResult = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
+            dbResult.Should().NotBeNull();
 
-            dbResponse.ProjectId.Should().BeNull();
-            dbResponse.Project.Should().BeNull();
+            dbResult.ProjectId.Should().BeNull();
+            dbResult.Project.Should().BeNull();
         }
 
         [Test]
@@ -385,8 +374,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.ProjectId)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             var request = _fixture.Build<UpdateEventRequest>()
                .With(x => x.ProjectId, projectId)
@@ -411,8 +399,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
@@ -420,8 +407,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.ProjectId)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             var request = _fixture.Build<UpdateEventRequest>()
                .With(x => x.ProjectId, project.Id)
@@ -445,8 +431,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.CalendarEvents)
                 .Create();
 
-            MockDbContext.Instance.Projects.Add(project);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddProjectsToDb(project);
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
@@ -454,8 +439,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.ProjectId)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             var request = _fixture.Build<UpdateEventRequest>()
                .With(x => x.ProjectId, project.Id)
@@ -467,7 +451,8 @@ namespace timer_app_tests.GatewayTests
             // Assert
             response.Project.Should().BeEquivalentTo(project.ToResponse());
 
-            var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
+            var dbResponse = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
+
             dbResponse.Should().NotBeNull();
 
             dbResponse.ProjectId.Should().Be(project.Id);
@@ -500,8 +485,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.Project)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             // Act
             Func<Task> func = async () => await _classUnderTest.DeleteEvent(calendarEvent.Id, userId);
@@ -521,8 +505,7 @@ namespace timer_app_tests.GatewayTests
                 .Without(x => x.Project)
                 .Create();
 
-            MockDbContext.Instance.CalendarEvents.Add(calendarEvent);
-            await MockDbContext.Instance.SaveChangesAsync();
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             // Act
             var response = await _classUnderTest.DeleteEvent(calendarEvent.Id, userId);
@@ -530,7 +513,8 @@ namespace timer_app_tests.GatewayTests
             // Assert
             response.Should().BeTrue();
 
-            var dbResponse = await MockDbContext.Instance.CalendarEvents.FindAsync(calendarEvent.Id);
+            var dbResponse = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
+
             dbResponse.Should().BeNull();
         }
     }

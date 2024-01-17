@@ -1,4 +1,4 @@
-﻿using timer_app.Controllers;
+﻿using timer_app.Boundary.Request;
 using timer_app.Infrastructure;
 
 namespace timer_app.Gateway.Interfaces
