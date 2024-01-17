@@ -1,4 +1,8 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using System;
+using timer_app.Boundary.Request;
+using timer_app.Boundary.Request.Validation;
 using timer_app.Infrastructure;
 
 namespace timer_app;
@@ -17,17 +21,23 @@ public class Startup
     {
         services.AddControllers();
 
+        ConfigureValidators(services);
+
         ConfigureDbContext(services);
+    }
+
+    private static void ConfigureValidators(IServiceCollection services)
+    {
+        services.AddScoped<IValidator<CreateEventRequest>, CreateEventRequestValidator>();
+        services.AddScoped<IValidator<CreateProjectRequest>, CreateProjectRequestValidator>();
+        services.AddScoped<IValidator<GetAllEventsRequest>, GetAllEventsRequestValidator>();
+        services.AddScoped<IValidator<UpdateEventRequest>, UpdateEventRequestValidator>();
+        services.AddScoped<IValidator<UpdateProjectRequest>, UpdateProjectRequestValidator>();
     }
 
     static void ConfigureDbContext(IServiceCollection services)
     {
         var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            //throw new InvalidOperationException($"The required environment variable 'CONNECTION_STRING' is not set.");
-        }
 
         services.AddDbContext<TimerAppContext>(
             opt => opt
