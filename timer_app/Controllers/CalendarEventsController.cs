@@ -16,7 +16,11 @@ namespace timer_app.Controllers
 
         private const int PlaceholderUserId = 1;
 
-        public CalendarEventsController(IGetAllEventsUseCase getAllEventsUseCase, ICreateEventUseCase createEventUseCase, IUpdateEventUseCase updateEventUseCase, IDeleteEventUseCase deleteEventUseCase)
+        public CalendarEventsController(
+            IGetAllEventsUseCase getAllEventsUseCase, 
+            ICreateEventUseCase createEventUseCase, 
+            IUpdateEventUseCase updateEventUseCase, 
+            IDeleteEventUseCase deleteEventUseCase)
         {
             _getAllEventsUseCase = getAllEventsUseCase;
             _createEventUseCase = createEventUseCase;
