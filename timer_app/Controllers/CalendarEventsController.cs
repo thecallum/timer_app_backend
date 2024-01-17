@@ -44,9 +44,9 @@ namespace timer_app.Controllers
             {
                 return BadRequest(e.Message); 
             }
-            catch (UserUnauthorizedToAccessEventException e)
+            catch (UserUnauthorizedToAccessProjectException e)
             {
-                return Unauthorized(e.Message);
+                return BadRequest(e.Message);
             }
         }
 
