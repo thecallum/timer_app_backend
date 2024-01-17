@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using timer_app.Boundary.Request;
 using timer_app.Gateway.Interfaces;
 using timer_app.Infrastructure;
 using timer_app.Infrastructure.Exceptions;
@@ -34,10 +35,10 @@ namespace timer_app.Gateway
             return project;
         }
 
-        public async Task<bool> UpdateProject(Project project, int userId)
+        public async Task<Project> UpdateProject(int projectId, UpdateProjectRequest request, int userId)
         {
-            var existingProject = await _context.Projects.FindAsync(project.Id);
-            if (existingProject == null) return false;
+            var existingProject = await _context.Projects.FindAsync(projectId);
+            if (existingProject == null) return null;
 
             if (existingProject.UserId != userId)
             {
@@ -45,12 +46,12 @@ namespace timer_app.Gateway
             }
 
             // Map through project fields
-            existingProject.Description = project.Description;
-            existingProject.DisplayColour = project.DisplayColour;
+            existingProject.Description = request.Description;
+            existingProject.DisplayColour = request.DisplayColour;
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return existingProject;
         }
 
         public async Task<bool> DeleteProject(int projectId, int userId)

@@ -1,4 +1,5 @@
-﻿using timer_app.Infrastructure;
+﻿using timer_app.Boundary.Request;
+using timer_app.Infrastructure;
 
 namespace timer_app.Gateway.Interfaces
 {
@@ -7,6 +8,6 @@ namespace timer_app.Gateway.Interfaces
         Task<Project> CreateProject(Project project, int userId);
         Task<bool> DeleteProject(int projectId, int userId);
         Task<IEnumerable<Project>> GetAllProjects(int userId);
-        Task<bool> UpdateProject(Project project, int userId);
+        Task<Project> UpdateProject(int projectId, UpdateProjectRequest request, int userId);
     }
 }

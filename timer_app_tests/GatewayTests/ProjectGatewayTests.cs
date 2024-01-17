@@ -1,10 +1,6 @@
 ﻿using AutoFixture;
 using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using timer_app.Boundary.Request;
 using timer_app.Gateway;
 using timer_app.Infrastructure;
 using timer_app.Infrastructure.Exceptions;
@@ -114,15 +110,14 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            var project = _fixture.Build<Project>()
-                .Without(x => x.CalendarEvents)
-                .Create();
+            var projectId = _fixture.Create<int>();
+            var request = _fixture.Create<UpdateProjectRequest>();
 
             // Act
-            var result = await _classUnderTest.UpdateProject(project, userId);
+            var result = await _classUnderTest.UpdateProject(projectId, request, userId);
 
             // Assert
-            result.Should().BeFalse();
+            result.Should().BeNull();
         }
 
         [Test]
@@ -137,8 +132,10 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.Projects.Add(project);
             await MockDbContext.Instance.SaveChangesAsync();
 
+            var request = new UpdateProjectRequest();
+
             // Act
-            Func<Task> task = async () => await _classUnderTest.UpdateProject(project, userId);
+            Func<Task> task = async () => await _classUnderTest.UpdateProject(project.Id, request, userId);
 
             // Assert
             await task.Should().ThrowAsync<UserUnauthorizedException>();
@@ -157,24 +154,23 @@ namespace timer_app_tests.GatewayTests
             MockDbContext.Instance.Projects.Add(project);
             await MockDbContext.Instance.SaveChangesAsync();
 
-            var projectWithUpdates = new Project
-            {
-                Id = project.Id,
-                UserId = userId,
-                Description = _fixture.Create<string>(),
-                DisplayColour = _fixture.Create<string>(),
-            };
+            var request = _fixture.Create<UpdateProjectRequest>();
 
             // Act
-            var result = await _classUnderTest.UpdateProject(projectWithUpdates, userId);
+            var result = await _classUnderTest.UpdateProject(project.Id, request, userId);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().NotBeNull();
+
+            result.Description.Should().Be(request.Description);
+            result.DisplayColour.Should().Be(request.DisplayColour);            
 
             var dbResponse = await MockDbContext.Instance.Projects.FindAsync(project.Id);
             dbResponse.Should().NotBeNull();
 
-            dbResponse.Should().BeEquivalentTo(projectWithUpdates);
+            dbResponse.Description.Should().Be(request.Description);
+            dbResponse.DisplayColour.Should().Be(request.DisplayColour);
+
         }
 
         [Test]
