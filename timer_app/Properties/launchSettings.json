@@ -4,7 +4,8 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CONNECTION_STRING": "Host=127.0.0.1:5433;Database=sampledb;Username=postgres;Password=mypassword"
       },
       "applicationUrl": "https://localhost:50086;http://localhost:50087"
     },
