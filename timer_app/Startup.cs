@@ -14,12 +14,14 @@ namespace timer_app;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         Configuration = configuration;
+        _env = env;
     }
 
     public IConfiguration Configuration { get; }
+    private readonly IWebHostEnvironment _env;
 
     // This method gets called by the runtime. Use this method to add services to the container
     public void ConfigureServices(IServiceCollection services)
@@ -53,9 +55,12 @@ public class Startup
         services.AddScoped<IValidator<UpdateProjectRequest>, UpdateProjectRequestValidator>();
     }
 
-    static void ConfigureDbContext(IServiceCollection services)
+    private void ConfigureDbContext(IServiceCollection services)
     {
-        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")
+            ?? Configuration.GetValue<string>("CONNECTION_STRING");
+
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         services.AddDbContext<TimerAppDbContext>(
             opt => opt
@@ -69,6 +74,11 @@ public class Startup
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+        }
+
+        if (Environment.GetEnvironmentVariable("LOCAL_ENV") == "true") {
+            var context = app.ApplicationServices.GetRequiredService<TimerAppDbContext>();
+            context.Database.Migrate();
         }
 
         app.UseHttpsRedirection();

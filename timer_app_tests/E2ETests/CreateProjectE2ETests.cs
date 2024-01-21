@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
+using timer_app.Factories;
 
 namespace timer_app_tests.E2ETests
 {
@@ -26,7 +27,13 @@ namespace timer_app_tests.E2ETests
             var request = new CreateProjectRequest
             {
                 Description = "",
-                DisplayColour = "#000000hsjofsf"
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000ddd",
+                    Lightest = "#000000ddd",
+                    Dark = "#000000ddd",
+                    Darkest = "#000000ddd",
+                }
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
@@ -47,7 +54,13 @@ namespace timer_app_tests.E2ETests
             var request = new CreateProjectRequest
             {
                 Description = "Description1234",
-                DisplayColour = "#000000"
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000",
+                    Lightest = "#000000",
+                    Dark = "#000000",
+                    Darkest = "#000000",
+                }
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
@@ -62,18 +75,16 @@ namespace timer_app_tests.E2ETests
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             responseContent.Should().NotBeNull();
-
             responseContent.Description.Should().Be(request.Description);
-            responseContent.DisplayColour.Should().Be(request.DisplayColour);
+            responseContent.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());
 
             using (var dbContext = CreateDbContext())
             {
                 var dbResponse = await dbContext.Projects.FindAsync(responseContent.Id);
 
                 dbResponse.Should().NotBeNull();
-
                 dbResponse.Description.Should().Be(request.Description);
-                dbResponse.DisplayColour.Should().Be(request.DisplayColour);
+                dbResponse.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());
             }
         }
     }

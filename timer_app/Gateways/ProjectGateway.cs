@@ -48,8 +48,15 @@ namespace timer_app.Gateway
 
             // Map through project fields
             existingProject.Description = request.Description;
-            existingProject.DisplayColour = request.DisplayColour;
 
+            existingProject.ProjectColor = new ProjectColor
+            {
+                Light = request.ProjectColor.Light,
+                Lightest = request.ProjectColor.Lightest,
+                Darkest = request.ProjectColor.Darkest,
+                Dark = request.ProjectColor.Dark,
+            };
+            
             _context.Entry(existingProject).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();

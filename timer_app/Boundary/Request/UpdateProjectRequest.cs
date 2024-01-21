@@ -3,6 +3,6 @@
     public class UpdateProjectRequest
     {
         public string Description { get; set; }
-        public string DisplayColour { get; set; }
+        public ProjectColorRequest ProjectColor { get; set; }
     }
 }

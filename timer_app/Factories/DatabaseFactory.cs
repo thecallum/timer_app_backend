@@ -5,12 +5,23 @@ namespace timer_app.Factories
 {
     public static class DatabaseFactory
     {
+        public static ProjectColor ToDb(this ProjectColorRequest request)
+        {
+            return new ProjectColor
+            {
+                Dark = request.Dark,
+                Darkest = request.Darkest,
+                Light = request.Light,
+                Lightest = request.Lightest,
+            };
+        }
+
         public static Project ToDb(this CreateProjectRequest request, int userId)
         {
             return new Project
             {
                 Description = request.Description,
-                DisplayColour = request.DisplayColour,
+                ProjectColor = request.ProjectColor?.ToDb(),
                 UserId = userId,
             };
         }

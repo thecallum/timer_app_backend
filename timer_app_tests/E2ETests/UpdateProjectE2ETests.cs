@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
+using timer_app.Factories;
 using timer_app.Infrastructure;
 
 namespace timer_app_tests.E2ETests
@@ -33,7 +34,13 @@ namespace timer_app_tests.E2ETests
             var request = new UpdateProjectRequest
             {
                 Description = "",
-                DisplayColour = "#000000hsjofsf"
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000hsjofsf",
+                    Lightest = "#000000hsjofsf",
+                    Dark = "#000000hsjofsf",
+                    Darkest = "#000000hsjofsf",
+                }
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
@@ -57,7 +64,13 @@ namespace timer_app_tests.E2ETests
             var request = new UpdateProjectRequest
             {
                 Description = "Description",
-                DisplayColour = "#000000"
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000",
+                    Lightest = "#000000",
+                    Dark = "#000000",
+                    Darkest = "#000000",
+                }
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
@@ -91,7 +104,13 @@ namespace timer_app_tests.E2ETests
             var request = new UpdateProjectRequest
             {
                 Description = "Description",
-                DisplayColour = "#000000"
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000",
+                    Lightest = "#000000",
+                    Dark = "#000000",
+                    Darkest = "#000000",
+                }
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
@@ -128,7 +147,13 @@ namespace timer_app_tests.E2ETests
             var request = new UpdateProjectRequest
             {
                 Description = "Description",
-                DisplayColour = "#000000"
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000",
+                    Lightest = "#000000",
+                    Dark = "#000000",
+                    Darkest = "#000000",
+                }
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
@@ -143,14 +168,14 @@ namespace timer_app_tests.E2ETests
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             responseContent.Description.Should().Be(request.Description);
-            responseContent.DisplayColour.Should().Be(request.DisplayColour);
+            responseContent.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());
 
             using (var dbContext = CreateDbContext())
             {
                 var dbResponse = await dbContext.Projects.FindAsync(projectId);
                 dbResponse.Should().NotBeNull();
                 dbResponse.Description.Should().Be(request.Description);
-                dbResponse.DisplayColour.Should().Be(request.DisplayColour);
+                dbResponse.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());
             }
         }
     }

@@ -11,5 +11,10 @@ namespace timer_app.Infrastructure
 
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<Project> Projects { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Project>().OwnsOne(p => p.ProjectColor);
+        }
     }
 }
