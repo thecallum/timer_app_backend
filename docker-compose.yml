@@ -1,0 +1,38 @@
+version: "3.2"
+
+services:
+
+  timer-app-api:
+    image: timer-app-api
+    build:
+      context: .
+      dockerfile: timer_app/Dockerfile
+    ports:
+      - 3001:3000
+    environment:
+      - CONNECTION_STRING=Host=db;Database=sampledb;Username=postgres;Password=mypassword
+      - LOCAL_ENV=true
+    links:
+      - db
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=sampledb
+    # ports:
+    #   - 5433:5432
+
+  # sample-database:
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=mypassword
+  #     - POSTGRES_DB=sampledb
+  #   image: sample-database
+  #   build:
+  #     context: .
+  #     dockerfile: database/Dockerfile
+  #   ports:
+  #     - 5433:5432

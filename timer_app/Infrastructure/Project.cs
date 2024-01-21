@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 
 namespace timer_app.Infrastructure
 {
@@ -9,9 +10,9 @@ namespace timer_app.Infrastructure
         public int UserId { get; set; }
 
         public string Description { get; set; }
-        public string DisplayColour { get; set; }
+
+        public ProjectColor ProjectColor { get; set; }
 
         public virtual List<CalendarEvent> CalendarEvents { get; set; }
-
     }
 }

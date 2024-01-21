@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using FluentAssertions;
 using timer_app.Boundary.Request;
+using timer_app.Factories;
 using timer_app.Gateway;
 using timer_app.Infrastructure;
 using timer_app.Infrastructure.Exceptions;
@@ -154,14 +155,13 @@ namespace timer_app_tests.GatewayTests
             result.Should().NotBeNull();
 
             result.Description.Should().Be(request.Description);
-            result.DisplayColour.Should().Be(request.DisplayColour);
+            result.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());
 
             var dbResponse = await GatewayTestHelpers.GetProject(project.Id);
             dbResponse.Should().NotBeNull();
 
             dbResponse.Description.Should().Be(request.Description);
-            dbResponse.DisplayColour.Should().Be(request.DisplayColour);
-
+            dbResponse.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());
         }
 
         [Test]

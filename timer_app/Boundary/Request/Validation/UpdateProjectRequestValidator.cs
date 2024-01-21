@@ -10,9 +10,9 @@ namespace timer_app.Boundary.Request.Validation
                 .NotEmpty()
                 .MaximumLength(100);
 
-            RuleFor(x => x.DisplayColour)
-                .NotEmpty()
-                .Length(7);
+            RuleFor(x => x.ProjectColor)
+                .NotNull()
+                .SetValidator(new ProjectColorValidator());
         }
     }
 }
