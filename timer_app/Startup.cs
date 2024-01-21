@@ -1,9 +1,14 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Reflection;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
+using timer_app.Gateway;
+using timer_app.Gateway.Interfaces;
 using timer_app.Infrastructure;
+using timer_app.UseCases;
+using timer_app.UseCases.Interfaces;
 
 namespace timer_app;
 
@@ -23,6 +28,19 @@ public class Startup
 
         ConfigureValidators(services);
 
+        services.AddTransient<ICalendarEventsGateway, CalendarEventsGateway>();
+        services.AddTransient<IProjectGateway, ProjectGateway>();
+
+        services.AddTransient<ICreateEventUseCase, CreateEventUseCase>();
+        services.AddTransient<ICreateProjectUseCase, CreateProjectUseCase>();
+        services.AddTransient<IDeleteEventUseCase, DeleteEventUseCase>();
+        services.AddTransient<IDeleteProjectUseCase, DeleteProjectUseCase>();
+        services.AddTransient<IGetAllEventsUseCase, GetAllEventsUseCase>();
+        services.AddTransient<IGetAllProjectsUseCase, GetAllProjectsUseCase>();
+        services.AddTransient<IUpdateEventUseCase, UpdateEventUseCase>();
+        services.AddTransient<IUpdateProjectUseCase, UpdateProjectUseCase>();
+
+
         ConfigureDbContext(services);
     }
 
@@ -39,7 +57,7 @@ public class Startup
     {
         var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 
-        services.AddDbContext<TimerAppContext>(
+        services.AddDbContext<TimerAppDbContext>(
             opt => opt
                 .UseNpgsql(connectionString)
         );

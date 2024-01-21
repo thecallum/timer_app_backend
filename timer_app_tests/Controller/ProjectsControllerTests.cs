@@ -6,6 +6,9 @@ using timer_app.Boundary.Response;
 using FluentAssertions;
 using timer_app.Boundary.Request;
 using timer_app.Infrastructure.Exceptions;
+using FluentValidation;
+using timer_app.Boundary.Request.Validation;
+using FluentValidation.Results;
 
 namespace timer_app_tests.Controller
 {
@@ -18,6 +21,9 @@ namespace timer_app_tests.Controller
         private Mock<IDeleteProjectUseCase> _deleteProjectUseCaseMock;
         private Mock<ICreateProjectUseCase> _createProjectUseCaseMock;
 
+        private Mock<IValidator<CreateProjectRequest>> _createProjectRequestValidatorMock;
+        private Mock<IValidator<UpdateProjectRequest>> _updateProjectRequestValidatorMock;
+
         private readonly Fixture _fixture = new Fixture();
         private readonly Random _random = new Random();
 
@@ -29,11 +35,25 @@ namespace timer_app_tests.Controller
             _deleteProjectUseCaseMock = new Mock<IDeleteProjectUseCase>();
             _createProjectUseCaseMock = new Mock<ICreateProjectUseCase>();
 
+            _createProjectRequestValidatorMock = new Mock<IValidator<CreateProjectRequest>>();
+
+            _createProjectRequestValidatorMock
+                .Setup(x => x.ValidateAsync(It.IsAny<CreateProjectRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
+            _updateProjectRequestValidatorMock = new Mock<IValidator<UpdateProjectRequest>>();
+
+            _updateProjectRequestValidatorMock
+                .Setup(x => x.ValidateAsync(It.IsAny<UpdateProjectRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
             _classUnderTest = new ProjectsController(
                 _getAllProjectsUseCaseMock.Object,
                 _updateProjectUseCaseMock.Object,
                 _deleteProjectUseCaseMock.Object,
-                _createProjectUseCaseMock.Object
+                _createProjectUseCaseMock.Object,
+                _createProjectRequestValidatorMock.Object,
+                _updateProjectRequestValidatorMock.Object
             );
         }
 
@@ -142,7 +162,7 @@ namespace timer_app_tests.Controller
 
             _updateProjectUseCaseMock
                 .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<int>()))
-                .ReturnsAsync((ProjectResponse) null);
+                .ReturnsAsync((ProjectResponse)null);
 
             // Act
             var result = await _classUnderTest.UpdateProject(query, request);

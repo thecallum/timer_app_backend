@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using timer_app.Boundary.Request;
+using timer_app.Boundary.Request.Validation;
 using timer_app.Infrastructure.Exceptions;
 using timer_app.UseCases.Interfaces;
 
 namespace timer_app.Controllers
 {
-    [Route("api/calendarEvents")]
+    [Route("api/events")]
     [ApiController]
     public class CalendarEventsController : ControllerBase
     {
@@ -14,23 +16,41 @@ namespace timer_app.Controllers
         private readonly IUpdateEventUseCase _updateEventUseCase;
         private readonly IDeleteEventUseCase _deleteEventUseCase;
 
+        private readonly IValidator<CreateEventRequest> _createEventRequestValidator;
+        private readonly IValidator<GetAllEventsRequest> _getAllEventsRequestValidator;
+        private readonly IValidator<UpdateEventRequest> _updateEventRequestValidator;
+
+
         private const int PlaceholderUserId = 1;
 
         public CalendarEventsController(
-            IGetAllEventsUseCase getAllEventsUseCase, 
-            ICreateEventUseCase createEventUseCase, 
-            IUpdateEventUseCase updateEventUseCase, 
-            IDeleteEventUseCase deleteEventUseCase)
+            IGetAllEventsUseCase getAllEventsUseCase,
+            ICreateEventUseCase createEventUseCase,
+            IUpdateEventUseCase updateEventUseCase,
+            IDeleteEventUseCase deleteEventUseCase,
+            IValidator<CreateEventRequest> createEventRequestValidator,
+            IValidator<GetAllEventsRequest> getAllEventsRequestValidator,
+            IValidator<UpdateEventRequest> updateEventRequestValidator)
         {
             _getAllEventsUseCase = getAllEventsUseCase;
             _createEventUseCase = createEventUseCase;
             _updateEventUseCase = updateEventUseCase;
             _deleteEventUseCase = deleteEventUseCase;
+            _createEventRequestValidator = createEventRequestValidator;
+            _getAllEventsRequestValidator = getAllEventsRequestValidator;
+            _updateEventRequestValidator = updateEventRequestValidator;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllEvents([FromBody] GetAllEventsRequest request)
+        public async Task<IActionResult> GetAllEvents([FromQuery] GetAllEventsRequest request)
         {
+            var validationResult = await _getAllEventsRequestValidator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var calendarEvents = await _getAllEventsUseCase.ExecuteAsync(request, PlaceholderUserId);
 
             return Ok(calendarEvents);
@@ -39,6 +59,13 @@ namespace timer_app.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] CreateEventRequest request)
         {
+            var validationResult = await _createEventRequestValidator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var calendarEvent = await _createEventUseCase.ExecuteAsync(request, PlaceholderUserId);
@@ -46,7 +73,7 @@ namespace timer_app.Controllers
             }
             catch (ProjectNotFoundException e)
             {
-                return BadRequest(e.Message); 
+                return BadRequest(e.Message);
             }
             catch (UserUnauthorizedToAccessProjectException e)
             {
@@ -58,6 +85,13 @@ namespace timer_app.Controllers
         [Route("{eventId}")]
         public async Task<IActionResult> UpdateEvent([FromRoute] EventQuery query, [FromBody] UpdateEventRequest request)
         {
+            var validationResult = await _updateEventRequestValidator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var response = await _updateEventUseCase.ExecuteAsync(query.EventId, request, PlaceholderUserId);

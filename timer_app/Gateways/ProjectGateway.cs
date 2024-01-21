@@ -9,9 +9,9 @@ namespace timer_app.Gateway
 {
     public class ProjectGateway : IProjectGateway
     {
-        private readonly TimerAppContext _context;
+        private readonly TimerAppDbContext _context;
 
-        public ProjectGateway(TimerAppContext context)
+        public ProjectGateway(TimerAppDbContext context)
         {
             _context = context;
         }
@@ -49,6 +49,8 @@ namespace timer_app.Gateway
             // Map through project fields
             existingProject.Description = request.Description;
             existingProject.DisplayColour = request.DisplayColour;
+
+            _context.Entry(existingProject).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
 

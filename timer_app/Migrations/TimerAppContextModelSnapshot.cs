@@ -10,7 +10,7 @@ using timer_app.Infrastructure;
 
 namespace timer_app.Migrations
 {
-    [DbContext(typeof(TimerAppContext))]
+    [DbContext(typeof(TimerAppDbContext))]
     partial class TimerAppContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

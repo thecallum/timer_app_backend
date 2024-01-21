@@ -2,9 +2,9 @@
 
 namespace timer_app.Infrastructure
 {
-    public class TimerAppContext : DbContext
+    public class TimerAppDbContext : DbContext
     {
-        public TimerAppContext(DbContextOptions<TimerAppContext> options)
+        public TimerAppDbContext(DbContextOptions<TimerAppDbContext> options)
             : base(options)
         {
         }

@@ -9,33 +9,39 @@ namespace timer_app.Gateway
 {
     public class CalendarEventsGateway : ICalendarEventsGateway
     {
-        private readonly TimerAppContext _context;
+        private readonly TimerAppDbContext _context;
 
-        public CalendarEventsGateway(TimerAppContext context)
+        public CalendarEventsGateway(TimerAppDbContext context)
         {
             _context = context;
         }
 
         public async Task<IEnumerable<CalendarEvent>> GetAllEvents(DateTime startTime, DateTime endTime, int userId)
         {
-            var calendarEvents = await _context.CalendarEvents
+            var query = _context.CalendarEvents
                 .Include(x => x.Project)
-                .Where(x => x.UserId == userId)
-                .Where(x => x.StartTime >= startTime && x.EndTime < endTime)
-                .ToListAsync();
+                .Where(x => x.UserId == userId);
 
-            return calendarEvents;
+            // event occurs within window
+            query = query
+                .Where(x =>
+                    (x.StartTime < startTime && x.EndTime > endTime) || // event starts before, and ends after
+                    (x.StartTime > startTime && x.StartTime < endTime) || // events starts within window
+                    (x.EndTime > startTime && x.EndTime < endTime)  // events ends within window
+                );
+
+            return await query.ToListAsync();
         }
 
         public async Task<CalendarEvent> CreateEvent(CreateEventRequest request, int userId)
         {
+            var calendarEvent = request.ToDb(userId);
+
             if (request.ProjectId != null)
             {
                 var project = await _context.Projects.FindAsync(request.ProjectId);
                 VerifyProject(project, (int)request.ProjectId, userId);
             }
-
-            var calendarEvent = request.ToDb(userId);
 
             _context.CalendarEvents.Add(calendarEvent);
             await _context.SaveChangesAsync();

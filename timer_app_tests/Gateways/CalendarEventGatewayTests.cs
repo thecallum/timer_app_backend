@@ -55,14 +55,14 @@ namespace timer_app_tests.GatewayTests
             var events = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
                 .With(x => x.StartTime, startTime.AddHours(1))
-                .With(x => x.EndTime, startTime.AddHours(2))
+                .With(x => x.EndTime, endTime.AddHours(-1))
                 .Without(x => x.Project)
                 .CreateMany(numberOfEvents);
 
             var eventForAnotherUser = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, otherUserId)
                 .With(x => x.StartTime, startTime.AddHours(1))
-                .With(x => x.EndTime, startTime.AddHours(2))
+                .With(x => x.EndTime, endTime.AddHours(-1))
                 .Without(x => x.Project)
                 .Create();
 
@@ -143,7 +143,7 @@ namespace timer_app_tests.GatewayTests
             var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
 
             // Assert
-            results.Should().HaveCount(numberOfEvents -2);
+            results.Should().HaveCount(numberOfEvents - 2);
             results.Should().NotContain(calendarEvents[0]);
             results.Should().NotContain(calendarEvents[1]);
         }
@@ -235,7 +235,7 @@ namespace timer_app_tests.GatewayTests
 
             var dbResult = await GatewayTestHelpers.GetEvent(result.Id);
             dbResult.Should().NotBeNull();
-           
+
             dbResult.Project.Should().NotBeNull();
             dbResult.Project.Should().BeEquivalentTo(project);
         }

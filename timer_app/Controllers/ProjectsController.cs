@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using timer_app.Boundary.Request;
 using timer_app.Infrastructure.Exceptions;
@@ -15,19 +16,37 @@ namespace timer_app.Controllers
         private readonly IDeleteProjectUseCase _deleteProjectUseCase;
         private readonly ICreateProjectUseCase _createProjectUseCase;
 
+        private readonly IValidator<CreateProjectRequest> _createProjectRequestValidator;
+        private readonly IValidator<UpdateProjectRequest> _updateProjectRequestValidator;
+
         private const int PlaceholderUserId = 1;
 
-        public ProjectsController(IGetAllProjectsUseCase getAllProjectsUseCase, IUpdateProjectUseCase updateProjectUseCase, IDeleteProjectUseCase deleteProjectUseCase, ICreateProjectUseCase createProjectUseCase)
+        public ProjectsController(
+            IGetAllProjectsUseCase getAllProjectsUseCase,
+            IUpdateProjectUseCase updateProjectUseCase,
+            IDeleteProjectUseCase deleteProjectUseCase,
+            ICreateProjectUseCase createProjectUseCase,
+            IValidator<CreateProjectRequest> createProjectRequestValidator,
+            IValidator<UpdateProjectRequest> updateProjectRequestValidator)
         {
             _getAllProjectsUseCase = getAllProjectsUseCase;
             _updateProjectUseCase = updateProjectUseCase;
             _deleteProjectUseCase = deleteProjectUseCase;
             _createProjectUseCase = createProjectUseCase;
+            _createProjectRequestValidator = createProjectRequestValidator;
+            _updateProjectRequestValidator = updateProjectRequestValidator;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequest request)
         {
+            var validationResult = await _createProjectRequestValidator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _createProjectUseCase.ExecuteAsync(request, PlaceholderUserId);
 
             return Ok(response);
@@ -54,6 +73,13 @@ namespace timer_app.Controllers
         [Route("{projectId}")]
         public async Task<IActionResult> UpdateProject([FromRoute] ProjectQuery query, [FromBody] UpdateProjectRequest request)
         {
+            var validationResult = await _updateProjectRequestValidator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var response = await _updateProjectUseCase.ExecuteAsync(query.ProjectId, request, PlaceholderUserId);

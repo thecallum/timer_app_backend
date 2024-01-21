@@ -10,7 +10,7 @@ using timer_app.Infrastructure;
 
 namespace timer_app.Migrations
 {
-    [DbContext(typeof(TimerAppContext))]
+    [DbContext(typeof(TimerAppDbContext))]
     [Migration("20240116073313_AddProjectsTable")]
     partial class AddProjectsTable
     {

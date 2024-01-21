@@ -10,19 +10,19 @@ namespace timer_app_tests
 {
     public static class MockDbContext
     {
-        private static TimerAppContext _context;
+        private static TimerAppDbContext _context;
 
-        public static TimerAppContext Instance
+        public static TimerAppDbContext Instance
         {
             get
             {
                 if (_context == null)
                 {
-                    var builder = new DbContextOptionsBuilder<TimerAppContext>();
+                    var builder = new DbContextOptionsBuilder<TimerAppDbContext>();
 
                     builder.UseInMemoryDatabase(Guid.NewGuid().ToString(), db => db.EnableNullChecks(false));
 
-                    _context = new TimerAppContext(builder.Options);
+                    _context = new TimerAppDbContext(builder.Options);
                     _context.Database.EnsureCreated();
                 }
                 return _context;

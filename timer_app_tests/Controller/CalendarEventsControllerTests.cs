@@ -6,8 +6,8 @@ using timer_app.Boundary.Response;
 using FluentAssertions;
 using timer_app.Boundary.Request;
 using timer_app.Infrastructure.Exceptions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace timer_app_tests.Controller
 {
@@ -20,6 +20,11 @@ namespace timer_app_tests.Controller
         private Mock<IDeleteEventUseCase> _deleteEventUseCaseMock;
         private Mock<ICreateEventUseCase> _createEventUseCaseMock;
 
+        private Mock<IValidator<CreateEventRequest>> _createEventRequestValidatorMock;
+        private Mock<IValidator<GetAllEventsRequest>> _getAllEventsRequestValidatorMock;
+        private Mock<IValidator<UpdateEventRequest>> _updateEventRequestValidatorMock;
+
+
         private readonly Fixture _fixture = new Fixture();
         private readonly Random _random = new Random();
 
@@ -31,11 +36,30 @@ namespace timer_app_tests.Controller
             _createEventUseCaseMock = new Mock<ICreateEventUseCase>();
             _deleteEventUseCaseMock = new Mock<IDeleteEventUseCase>();
 
+            _createEventRequestValidatorMock = new Mock<IValidator<CreateEventRequest>>();
+            _getAllEventsRequestValidatorMock = new Mock<IValidator<GetAllEventsRequest>>();
+            _updateEventRequestValidatorMock = new Mock<IValidator<UpdateEventRequest>>();
+
+            _createEventRequestValidatorMock
+                .Setup(x => x.ValidateAsync(It.IsAny<CreateEventRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
+            _getAllEventsRequestValidatorMock
+                .Setup(x => x.ValidateAsync(It.IsAny<GetAllEventsRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
+            _updateEventRequestValidatorMock
+                .Setup(x => x.ValidateAsync(It.IsAny<UpdateEventRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
             _classUnderTest = new CalendarEventsController(
                 _getAllEventsUseCaseMock.Object,
                 _createEventUseCaseMock.Object,
                 _updateEventUseCaseMock.Object,
-                _deleteEventUseCaseMock.Object
+                _deleteEventUseCaseMock.Object,
+                _createEventRequestValidatorMock.Object,
+                _getAllEventsRequestValidatorMock.Object,
+                _updateEventRequestValidatorMock.Object
             );
         }
 
@@ -140,7 +164,7 @@ namespace timer_app_tests.Controller
 
             _updateEventUseCaseMock
                 .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
-                .ReturnsAsync((CalendarEventResponse) null);
+                .ReturnsAsync((CalendarEventResponse)null);
 
             // Act
             var result = await _classUnderTest.UpdateEvent(query, request);
