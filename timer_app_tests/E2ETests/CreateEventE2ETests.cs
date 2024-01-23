@@ -98,6 +98,7 @@ namespace timer_app_tests.E2ETests
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.UserId, otherUserId)
+                .With(x => x.IsActive, true)
                 .Create();
 
             dbContext.Projects.Add(project);
@@ -127,6 +128,48 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
+        public async Task CreateEvent_WhenProjectIsArchived_Returns422()
+        {
+            // Arrange
+            var url = new Uri($"/api/events", UriKind.Relative);
+
+            var userId = 1;
+
+            using var dbContext = CreateDbContext();
+
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Create();
+
+            dbContext.Projects.Add(project);
+            await dbContext.SaveChangesAsync();
+
+            var startTime = _fixture.Create<DateTime>();
+            var endTime = startTime.AddDays(1);
+
+            var request = new CreateEventRequest
+            {
+                Description = "Description",
+                ProjectId = project.Id,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.PostAsync(url, content);
+
+            var stringResult = await response.Content.ReadAsStringAsync();
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            stringResult.Should().Be($"The project {project.Id} has been archived.");
+        }
+
+        [Test]
         public async Task CreateEvent_WhenValid_Returns200()
         {
             // Arrange
@@ -137,6 +180,7 @@ namespace timer_app_tests.E2ETests
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
                 .Create();
 
             using (var dbContext = CreateDbContext())

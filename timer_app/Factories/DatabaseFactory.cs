@@ -23,6 +23,7 @@ namespace timer_app.Factories
                 Description = request.Description,
                 ProjectColor = request.ProjectColor?.ToDb(),
                 UserId = userId,
+                IsActive = true
             };
         }
 

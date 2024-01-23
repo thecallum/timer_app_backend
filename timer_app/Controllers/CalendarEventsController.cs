@@ -79,6 +79,10 @@ namespace timer_app.Controllers
             {
                 return BadRequest(e.Message);
             }
+            catch (ProjectIsArchivedException e)
+            {
+                return UnprocessableEntity(e.Message);
+            }
         }
 
         [HttpPut]
@@ -110,6 +114,10 @@ namespace timer_app.Controllers
             catch (UserUnauthorizedToAccessProjectException e)
             {
                 return BadRequest(e.Message);
+            }
+            catch (ProjectIsArchivedException e)
+            {
+                return UnprocessableEntity(e.Message);
             }
         }
 

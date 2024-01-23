@@ -193,6 +193,7 @@ namespace timer_app_tests.GatewayTests
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -209,6 +210,31 @@ namespace timer_app_tests.GatewayTests
         }
 
         [Test]
+        public async Task CreateEvent_WhenProjectArchived_ThrowsException()
+        {
+            // Arrange
+            var userId = _fixture.Create<int>();
+
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Create();
+
+            await GatewayTestHelpers.AddProjectsToDb(project);
+
+            var request = _fixture.Build<CreateEventRequest>()
+                .With(x => x.ProjectId, project.Id)
+                .Create();
+
+            // Act
+            Func<Task> func = async () => await _classUnderTest.CreateEvent(request, userId);
+
+            // Assert
+            await func.Should().ThrowAsync<ProjectIsArchivedException>();
+        }
+
+        [Test]
         public async Task CreateEvent_WhenCalledWithProject_AssignsProjectToEvent()
         {
             // Arrange
@@ -217,6 +243,7 @@ namespace timer_app_tests.GatewayTests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -332,6 +359,7 @@ namespace timer_app_tests.GatewayTests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -398,6 +426,7 @@ namespace timer_app_tests.GatewayTests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -422,6 +451,40 @@ namespace timer_app_tests.GatewayTests
         }
 
         [Test]
+        public async Task WhenProjectIdIncludedButArchived_ThrowsException()
+        {
+            // Arrange
+            var userId = _fixture.Create<int>();
+            var otherUserId = userId + 1;
+
+            var project = _fixture.Build<Project>()
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Without(x => x.CalendarEvents)
+                .Create();
+
+            await GatewayTestHelpers.AddProjectsToDb(project);
+
+            var calendarEvent = _fixture.Build<CalendarEvent>()
+                .With(x => x.UserId, userId)
+                .Without(x => x.Project)
+                .Without(x => x.ProjectId)
+                .Create();
+
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
+
+            var request = _fixture.Build<UpdateEventRequest>()
+               .With(x => x.ProjectId, project.Id)
+               .Create();
+
+            // Act
+            Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
+
+            // Assert
+            await task.Should().ThrowAsync<ProjectIsArchivedException>();
+        }
+
+        [Test]
         public async Task UpdateEvent_WhenProjectIdIncluded_AddsProjectReference()
         {
             // Arrange
@@ -429,6 +492,7 @@ namespace timer_app_tests.GatewayTests
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
                 .Without(x => x.CalendarEvents)
                 .Create();
 

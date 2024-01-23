@@ -8,5 +8,6 @@ namespace timer_app.Boundary.Response
         public int Id { get; set; }
         public string Description { get; set; }
         public ProjectColorResponse ProjectColor { get; set; }
+        public bool IsActive { get; set; }
     }
 }

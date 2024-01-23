@@ -44,6 +44,7 @@ namespace timer_app_tests.E2ETests
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.UserId, otherUserId)
+                .With(x => x.IsActive, true)
                 .Create();
 
             dbContext.Projects.Add(project);
@@ -59,7 +60,7 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
-        public async Task DeleteProject_WhenProjectDeleted_Returns201()
+        public async Task DeleteProject_WhenArchived_Returns422()
         {
             // Arrange
             var userId = 1;
@@ -69,6 +70,7 @@ namespace timer_app_tests.E2ETests
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
                 .Create();
 
             dbContext.Projects.Add(project);
@@ -80,10 +82,41 @@ namespace timer_app_tests.E2ETests
             var response = await Client.DeleteAsync(url);
 
             // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        }
+
+        [Test]
+        public async Task DeleteProject_WhenProjectDeleted_Returns201()
+        {
+            // Arrange
+            var userId = 1;
+
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
+                .Create();
+
+            using (var dbContext = CreateDbContext())
+            {
+                dbContext.Projects.Add(project);
+                await dbContext.SaveChangesAsync();
+            }            
+
+            var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
+
+            // Act
+            var response = await Client.DeleteAsync(url);
+
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-            var dbResponse = await dbContext.Projects.FindAsync(project.Id);
-            dbResponse.Should().NotBeNull();
+            using (var dbContext = CreateDbContext())
+            {
+                var dbResponse = await dbContext.Projects.FindAsync(project.Id);
+                dbResponse.Should().NotBeNull();
+                dbResponse.IsActive.Should().BeFalse();
+            }
         }
     }
 }

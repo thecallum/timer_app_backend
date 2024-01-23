@@ -30,6 +30,7 @@ namespace timer_app.Factories
                 Id = db.Id,
                 Description = db.Description,
                 ProjectColor = db.ProjectColor.ToResponse(),
+                IsActive = db.IsActive,
             };
         }
 

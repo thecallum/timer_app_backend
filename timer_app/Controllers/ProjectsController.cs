@@ -67,6 +67,10 @@ namespace timer_app.Controllers
             {
                 return Unauthorized(e.Message);
             }
+            catch (ProjectIsArchivedException e)
+            {
+                return UnprocessableEntity(e.Message);
+            }
         }
 
         [HttpPut]
@@ -90,6 +94,10 @@ namespace timer_app.Controllers
             catch (UserUnauthorizedToAccessProjectException e)
             {
                 return Unauthorized(e.Message);
+            }
+            catch (ProjectIsArchivedException e)
+            {
+                return UnprocessableEntity(e.Message);
             }
         }
 

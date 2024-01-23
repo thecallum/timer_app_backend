@@ -55,10 +55,23 @@ namespace timer_app.Gateway
         private static void VerifyProject(Project project, int projectId, int userId)
         {
             // verify project exists
-            if (project == null) throw new ProjectNotFoundException((int)projectId);
+            if (project == null)
+            {
+                throw new ProjectNotFoundException((int)projectId);
+            }
 
             // verify user owns project
-            if (project.UserId != userId) throw new UserUnauthorizedToAccessProjectException(userId);
+            if (project.UserId != userId)
+            {
+                throw new UserUnauthorizedToAccessProjectException(userId);
+            }
+
+            // verify project is active 
+            // (cannot assign an archived project)
+            if (!project.IsActive)
+            {
+                throw new ProjectIsArchivedException(projectId);
+            }
         }
 
         public async Task<CalendarEvent> UpdateEvent(int calendarEventId, UpdateEventRequest request, int userId)

@@ -136,6 +136,25 @@ namespace timer_app_tests.Controller
         }
 
         [Test]
+        public async Task DeleteProject_WhenArchived_Returns422()
+        {
+            // Arrange
+            var query = _fixture.Create<ProjectQuery>();
+
+            _deleteProjectUseCaseMock
+                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<int>()))
+                .ThrowsAsync(new ProjectIsArchivedException(query.ProjectId));
+
+            // Act
+            var result = await _classUnderTest.DeleteProject(query);
+            var statusCode = GetStatusCode(result);
+
+            // Assert
+            statusCode.Should().Be(422);
+        }
+
+
+        [Test]
         public async Task DeleteProject_WhenSuccessful_Returns204NoContent()
         {
             // Arrange
@@ -190,6 +209,26 @@ namespace timer_app_tests.Controller
 
             // Assert
             statusCode.Should().Be(401);
+        }
+
+        [Test]
+        public async Task UpdateProject_WhenArchived_Returns422()
+        {
+            // Arrange
+            var query = _fixture.Create<ProjectQuery>();
+            var request = _fixture.Create<UpdateProjectRequest>();
+
+            _updateProjectUseCaseMock
+                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<int>()))
+               .ThrowsAsync(new ProjectIsArchivedException(query.ProjectId));
+
+            // Act
+            var result = await _classUnderTest.UpdateProject(query, request);
+
+            var statusCode = GetStatusCode(result);
+
+            // Assert
+            statusCode.Should().Be(422);
         }
 
         [Test]
