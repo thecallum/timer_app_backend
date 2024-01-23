@@ -94,6 +94,7 @@ namespace timer_app_tests.E2ETests
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.UserId, otherUserId)
+                .With(x => x.IsActive, true)
                 .Create();
 
             dbContext.Projects.Add(project);
@@ -124,25 +125,66 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
-        public async Task UpdateProject_WhenUpdated_Returns200()
+        public async Task UpdateProject_WhenArchived_Returns422()
         {
             // Arrange
             var userId = 1;
-            var projectId = _fixture.Create<int>();
+
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Create();
 
             using (var dbContext = CreateDbContext())
             {
-                var project = _fixture.Build<Project>()
-                    .Without(x => x.CalendarEvents)
-                    .With(x => x.UserId, userId)
-                    .With(x => x.Id, projectId)
-                    .Create();
-
                 dbContext.Projects.Add(project);
                 await dbContext.SaveChangesAsync();
             }
 
-            var url = new Uri($"/api/projects/{projectId}", UriKind.Relative);
+            var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
+
+            var request = new UpdateProjectRequest
+            {
+                Description = "Description",
+                ProjectColor = new ProjectColorRequest
+                {
+                    Light = "#000000",
+                    Lightest = "#000000",
+                    Dark = "#000000",
+                    Darkest = "#000000",
+                }
+            };
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.PutAsync(url, content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        }
+
+        [Test]
+        public async Task UpdateProject_WhenUpdated_Returns200()
+        {
+            // Arrange
+            var userId = 1;
+
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
+                .Create();
+
+            using (var dbContext = CreateDbContext())
+            {
+                dbContext.Projects.Add(project);
+                await dbContext.SaveChangesAsync();
+            }
+
+            var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
             var request = new UpdateProjectRequest
             {
@@ -172,7 +214,7 @@ namespace timer_app_tests.E2ETests
 
             using (var dbContext = CreateDbContext())
             {
-                var dbResponse = await dbContext.Projects.FindAsync(projectId);
+                var dbResponse = await dbContext.Projects.FindAsync(project.Id);
                 dbResponse.Should().NotBeNull();
                 dbResponse.Description.Should().Be(request.Description);
                 dbResponse.ProjectColor.Should().BeEquivalentTo(request.ProjectColor.ToDb().ToResponse());

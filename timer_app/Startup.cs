@@ -26,6 +26,7 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddCors();
         services.AddControllers();
 
         ConfigureValidators(services);
@@ -76,7 +77,13 @@ public class Startup
             app.UseDeveloperExceptionPage();
         }
 
-        if (Environment.GetEnvironmentVariable("LOCAL_ENV") == "true") {
+        app.UseCors(builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+
+        if (Environment.GetEnvironmentVariable("LOCAL_ENV") == "true")
+        {
             var context = app.ApplicationServices.GetRequiredService<TimerAppDbContext>();
             context.Database.Migrate();
         }

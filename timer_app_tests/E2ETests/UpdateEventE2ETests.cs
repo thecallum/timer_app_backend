@@ -176,6 +176,7 @@ namespace timer_app_tests.E2ETests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
@@ -217,6 +218,56 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
+        public async Task UpdateEvent_WhenProjectArchived_Returns400()
+        {
+            // Arrange
+            var userId = 1;
+
+            var project = _fixture.Build<Project>()
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Without(x => x.CalendarEvents)
+                .Create();
+
+            var calendarEvent = _fixture.Build<CalendarEvent>()
+                .With(x => x.UserId, userId)
+                .Without(x => x.Project)
+                .Without(x => x.ProjectId)
+                .Create();
+
+            using (var dbContext = CreateDbContext())
+            {
+                dbContext.Projects.Add(project);
+                dbContext.CalendarEvents.Add(calendarEvent);
+                await dbContext.SaveChangesAsync();
+            }
+
+            var url = new Uri($"/api/events/{calendarEvent.Id}", UriKind.Relative);
+
+            var startTime = _fixture.Create<DateTime>();
+            var endTime = startTime.AddDays(1);
+
+            var request = new UpdateEventRequest
+            {
+                Description = "Description",
+                ProjectId = project.Id,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.PutAsync(url, content);
+            var stringResult = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            stringResult.Should().Be($"The project {project.Id} has been archived.");
+        }
+
+        [Test]
         public async Task UpdateEvent_WhenValid_Returns200()
         {
             // Arrange
@@ -224,6 +275,7 @@ namespace timer_app_tests.E2ETests
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
                 .Without(x => x.CalendarEvents)
                 .Create();
 
@@ -268,7 +320,7 @@ namespace timer_app_tests.E2ETests
             responseContent.Description.Should().Be(request.Description);
             responseContent.StartTime.Should().Be(request.StartTime);
             responseContent.EndTime.Should().Be(request.EndTime);
-            responseContent.Project.Should().BeEquivalentTo(project.ToResponse());
+            responseContent.ProjectId.Should().Be(project.Id);
 
             using (var dbContext = CreateDbContext())
             {

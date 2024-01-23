@@ -135,6 +135,30 @@ namespace timer_app_tests.Controller
         }
 
         [Test]
+        public async Task CreateEvent_WhenProjectIsArchived_Returns400()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateEventRequest>();
+
+            var numberOfResults = _random.Next(2, 5);
+            var useCaseResponse = _fixture.CreateMany<CalendarEventResponse>(numberOfResults);
+            var exception = new ProjectIsArchivedException((int)request.ProjectId);
+
+            _createEventUseCaseMock
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            var result = await _classUnderTest.CreateEvent(request);
+            var responseObject = GetResultData<string>(result);
+            var statusCode = GetStatusCode(result);
+
+            // Assert
+            statusCode.Should().Be(400);
+            responseObject.Should().Be(exception.Message);
+        }
+
+        [Test]
         public async Task CreateEvent_WhenSuccessful_Returns200()
         {
             // Arrange
@@ -222,6 +246,28 @@ namespace timer_app_tests.Controller
             var query = _fixture.Create<EventQuery>();
             var request = _fixture.Create<UpdateEventRequest>();
             var exception = new UserUnauthorizedToAccessProjectException(query.EventId);
+
+            _updateEventUseCaseMock
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            var result = await _classUnderTest.UpdateEvent(query, request);
+            var responseObject = GetResultData<string>(result);
+            var statusCode = GetStatusCode(result);
+
+            // Assert
+            statusCode.Should().Be(400);
+            responseObject.Should().Be(exception.Message);
+        }
+
+        [Test]
+        public async Task UpdateEvent_WhenProjectIsArchived_Returns400()
+        {
+            // Arrange
+            var query = _fixture.Create<EventQuery>();
+            var request = _fixture.Create<UpdateEventRequest>();
+            var exception = new ProjectIsArchivedException((int)request.ProjectId);
 
             _updateEventUseCaseMock
                 .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))

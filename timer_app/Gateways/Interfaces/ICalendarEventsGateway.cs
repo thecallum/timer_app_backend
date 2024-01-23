@@ -7,7 +7,7 @@ namespace timer_app.Gateway.Interfaces
     {
         Task<CalendarEvent> CreateEvent(CreateEventRequest request, int userId);
         Task<bool> DeleteEvent(int calendarEventId, int userId);
-        Task<IEnumerable<CalendarEvent>> GetAllEvents(DateTime startTime, DateTime endTime, int userId);
+        Task<IEnumerable<CalendarEvent>> GetAllEvents(int userId, DateTime? startTime, DateTime? endTime);
         Task<CalendarEvent> UpdateEvent(int calendarEventId, UpdateEventRequest request, int userId);
     }
 }

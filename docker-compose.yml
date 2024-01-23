@@ -10,20 +10,20 @@ services:
     ports:
       - 3001:3000
     environment:
-      - CONNECTION_STRING=Host=db;Database=sampledb;Username=postgres;Password=mypassword
+      - CONNECTION_STRING=Host=local-db:5432;Database=sampledb;Username=postgres;Password=mypassword
       - LOCAL_ENV=true
     links:
-      - db
+      - local-db
 
-  db:
+  local-db:
     image: postgres
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=mypassword
       - POSTGRES_DB=sampledb
-    # ports:
-    #   - 5433:5432
+    ports:
+      - 5432:5432
 
   # sample-database:
   #   environment:

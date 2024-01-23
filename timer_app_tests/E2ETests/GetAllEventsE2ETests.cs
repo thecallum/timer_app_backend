@@ -125,7 +125,7 @@ namespace timer_app_tests.E2ETests
 
             foreach (var calendarEvent in responseContent)
             {
-                calendarEvent.Project.Should().NotBeNull();
+                calendarEvent.ProjectId.Should().NotBeNull();
             }
         }
     }

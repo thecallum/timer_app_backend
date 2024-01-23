@@ -30,6 +30,7 @@ namespace timer_app.Factories
                 Id = db.Id,
                 Description = db.Description,
                 ProjectColor = db.ProjectColor.ToResponse(),
+                IsActive = db.IsActive,
             };
         }
 
@@ -43,7 +44,7 @@ namespace timer_app.Factories
             return new CalendarEventResponse
             {
                 Id = db.Id,
-                Project = db.Project?.ToResponse(),
+                ProjectId = db.ProjectId,
                 StartTime = db.StartTime,
                 EndTime = db.EndTime,
                 Description = db.Description,

@@ -16,19 +16,22 @@ namespace timer_app.Gateway
             _context = context;
         }
 
-        public async Task<IEnumerable<CalendarEvent>> GetAllEvents(DateTime startTime, DateTime endTime, int userId)
+        public async Task<IEnumerable<CalendarEvent>> GetAllEvents(int userId, DateTime? startTime, DateTime? endTime)
         {
             var query = _context.CalendarEvents
                 .Include(x => x.Project)
                 .Where(x => x.UserId == userId);
 
-            // event occurs within window
-            query = query
-                .Where(x =>
-                    (x.StartTime < startTime && x.EndTime > endTime) || // event starts before, and ends after
-                    (x.StartTime > startTime && x.StartTime < endTime) || // events starts within window
-                    (x.EndTime > startTime && x.EndTime < endTime)  // events ends within window
+            if (startTime != null)
+            {
+                // event occurs within window
+                query = query
+                    .Where(x =>
+                        (x.StartTime < startTime && x.EndTime > endTime) || // event starts before, and ends after
+                        (x.StartTime > startTime && x.StartTime < endTime) || // events starts within window
+                        (x.EndTime > startTime && x.EndTime < endTime)  // events ends within window
                 );
+            }
 
             return await query.ToListAsync();
         }
@@ -52,10 +55,23 @@ namespace timer_app.Gateway
         private static void VerifyProject(Project project, int projectId, int userId)
         {
             // verify project exists
-            if (project == null) throw new ProjectNotFoundException((int)projectId);
+            if (project == null)
+            {
+                throw new ProjectNotFoundException((int)projectId);
+            }
 
             // verify user owns project
-            if (project.UserId != userId) throw new UserUnauthorizedToAccessProjectException(userId);
+            if (project.UserId != userId)
+            {
+                throw new UserUnauthorizedToAccessProjectException(userId);
+            }
+
+            // verify project is active 
+            // (cannot assign an archived project)
+            if (!project.IsActive)
+            {
+                throw new ProjectIsArchivedException(projectId);
+            }
         }
 
         public async Task<CalendarEvent> UpdateEvent(int calendarEventId, UpdateEventRequest request, int userId)
@@ -76,7 +92,7 @@ namespace timer_app.Gateway
             if (request.ProjectId == null && existingCalendarEvent.ProjectId != null)
             {
                 // remove project
-                existingCalendarEvent.Project = null;
+                existingCalendarEvent.ProjectId = null;
             }
 
             if (request.ProjectId != null && existingCalendarEvent.ProjectId != request.ProjectId)

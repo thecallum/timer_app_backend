@@ -36,7 +36,7 @@ namespace timer_app_tests.GatewayTests
             var userId = _fixture.Create<int>();
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().BeEmpty();
@@ -71,7 +71,7 @@ namespace timer_app_tests.GatewayTests
             await GatewayTestHelpers.AddEventsToDb(eventForAnotherUser);
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().HaveCount(numberOfEvents);
@@ -104,7 +104,7 @@ namespace timer_app_tests.GatewayTests
             await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().HaveCount(1);
@@ -140,7 +140,7 @@ namespace timer_app_tests.GatewayTests
             await GatewayTestHelpers.AddEventsToDb(calendarEvents.ToArray());
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().HaveCount(numberOfEvents - 2);
@@ -193,6 +193,7 @@ namespace timer_app_tests.GatewayTests
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -209,6 +210,31 @@ namespace timer_app_tests.GatewayTests
         }
 
         [Test]
+        public async Task CreateEvent_WhenProjectArchived_ThrowsException()
+        {
+            // Arrange
+            var userId = _fixture.Create<int>();
+
+            var project = _fixture.Build<Project>()
+                .Without(x => x.CalendarEvents)
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Create();
+
+            await GatewayTestHelpers.AddProjectsToDb(project);
+
+            var request = _fixture.Build<CreateEventRequest>()
+                .With(x => x.ProjectId, project.Id)
+                .Create();
+
+            // Act
+            Func<Task> func = async () => await _classUnderTest.CreateEvent(request, userId);
+
+            // Assert
+            await func.Should().ThrowAsync<ProjectIsArchivedException>();
+        }
+
+        [Test]
         public async Task CreateEvent_WhenCalledWithProject_AssignsProjectToEvent()
         {
             // Arrange
@@ -217,6 +243,7 @@ namespace timer_app_tests.GatewayTests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -230,7 +257,7 @@ namespace timer_app_tests.GatewayTests
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id).Excluding(x => x.Project));
+            result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id));
             result.Project.Should().BeEquivalentTo(project.ToResponse());
 
             var dbResult = await GatewayTestHelpers.GetEvent(result.Id);
@@ -332,6 +359,7 @@ namespace timer_app_tests.GatewayTests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -353,6 +381,7 @@ namespace timer_app_tests.GatewayTests
 
             // Assert
             response.Project.Should().BeNull();
+            response.ProjectId.Should().BeNull();
 
             var dbResult = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
             dbResult.Should().NotBeNull();
@@ -397,6 +426,7 @@ namespace timer_app_tests.GatewayTests
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
                 .Without(x => x.CalendarEvents)
+                .With(x => x.IsActive, true)
                 .Create();
 
             await GatewayTestHelpers.AddProjectsToDb(project);
@@ -421,6 +451,40 @@ namespace timer_app_tests.GatewayTests
         }
 
         [Test]
+        public async Task WhenProjectIdIncludedButArchived_ThrowsException()
+        {
+            // Arrange
+            var userId = _fixture.Create<int>();
+            var otherUserId = userId + 1;
+
+            var project = _fixture.Build<Project>()
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, false)
+                .Without(x => x.CalendarEvents)
+                .Create();
+
+            await GatewayTestHelpers.AddProjectsToDb(project);
+
+            var calendarEvent = _fixture.Build<CalendarEvent>()
+                .With(x => x.UserId, userId)
+                .Without(x => x.Project)
+                .Without(x => x.ProjectId)
+                .Create();
+
+            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
+
+            var request = _fixture.Build<UpdateEventRequest>()
+               .With(x => x.ProjectId, project.Id)
+               .Create();
+
+            // Act
+            Func<Task> task = async () => await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
+
+            // Assert
+            await task.Should().ThrowAsync<ProjectIsArchivedException>();
+        }
+
+        [Test]
         public async Task UpdateEvent_WhenProjectIdIncluded_AddsProjectReference()
         {
             // Arrange
@@ -428,6 +492,7 @@ namespace timer_app_tests.GatewayTests
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
                 .Without(x => x.CalendarEvents)
                 .Create();
 

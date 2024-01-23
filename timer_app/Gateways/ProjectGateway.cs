@@ -46,6 +46,11 @@ namespace timer_app.Gateway
                 throw new UserUnauthorizedToAccessProjectException(userId);
             }
 
+            if (!existingProject.IsActive)
+            {
+                throw new ProjectIsArchivedException(projectId);
+            }
+
             // Map through project fields
             existingProject.Description = request.Description;
 
@@ -56,7 +61,7 @@ namespace timer_app.Gateway
                 Darkest = request.ProjectColor.Darkest,
                 Dark = request.ProjectColor.Dark,
             };
-            
+
             _context.Entry(existingProject).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
@@ -74,7 +79,13 @@ namespace timer_app.Gateway
                 throw new UserUnauthorizedToAccessProjectException(userId);
             }
 
-            _context.Projects.Remove(project);
+            if (!project.IsActive)
+            {
+                throw new ProjectIsArchivedException(projectId);
+            }
+
+            // Soft delete
+            project.IsActive = false;
             await _context.SaveChangesAsync();
 
             return true;

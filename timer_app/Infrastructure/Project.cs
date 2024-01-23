@@ -11,6 +11,8 @@ namespace timer_app.Infrastructure
 
         public string Description { get; set; }
 
+        public bool IsActive { get; set; }
+
         public ProjectColor ProjectColor { get; set; }
 
         public virtual List<CalendarEvent> CalendarEvents { get; set; }
