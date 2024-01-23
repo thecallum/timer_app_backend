@@ -17,7 +17,7 @@ namespace timer_app.UseCases
 
         public async Task<IEnumerable<CalendarEventResponse>> ExecuteAsync(GetAllEventsRequest request, int userId)
         {
-            var calendarEvents = await _gateway.GetAllEvents(request.StartTime, request.EndTime, userId);
+            var calendarEvents = await _gateway.GetAllEvents(userId, request.StartTime, request.EndTime);
 
             return calendarEvents.ToResponse();
         }

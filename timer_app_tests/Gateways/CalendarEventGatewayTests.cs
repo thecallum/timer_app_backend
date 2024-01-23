@@ -36,7 +36,7 @@ namespace timer_app_tests.GatewayTests
             var userId = _fixture.Create<int>();
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().BeEmpty();
@@ -71,7 +71,7 @@ namespace timer_app_tests.GatewayTests
             await GatewayTestHelpers.AddEventsToDb(eventForAnotherUser);
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().HaveCount(numberOfEvents);
@@ -104,7 +104,7 @@ namespace timer_app_tests.GatewayTests
             await GatewayTestHelpers.AddEventsToDb(calendarEvent);
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().HaveCount(1);
@@ -140,7 +140,7 @@ namespace timer_app_tests.GatewayTests
             await GatewayTestHelpers.AddEventsToDb(calendarEvents.ToArray());
 
             // Act
-            var results = await _classUnderTest.GetAllEvents(startTime, endTime, userId);
+            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
 
             // Assert
             results.Should().HaveCount(numberOfEvents - 2);
@@ -230,7 +230,7 @@ namespace timer_app_tests.GatewayTests
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id).Excluding(x => x.Project));
+            result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id));
             result.Project.Should().BeEquivalentTo(project.ToResponse());
 
             var dbResult = await GatewayTestHelpers.GetEvent(result.Id);
@@ -353,6 +353,7 @@ namespace timer_app_tests.GatewayTests
 
             // Assert
             response.Project.Should().BeNull();
+            response.ProjectId.Should().BeNull();
 
             var dbResult = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
             dbResult.Should().NotBeNull();

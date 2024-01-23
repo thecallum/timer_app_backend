@@ -43,7 +43,7 @@ namespace timer_app.Factories
             return new CalendarEventResponse
             {
                 Id = db.Id,
-                Project = db.Project?.ToResponse(),
+                ProjectId = db.ProjectId,
                 StartTime = db.StartTime,
                 EndTime = db.EndTime,
                 Description = db.Description,

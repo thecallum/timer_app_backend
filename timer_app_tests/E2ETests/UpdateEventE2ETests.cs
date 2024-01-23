@@ -268,7 +268,7 @@ namespace timer_app_tests.E2ETests
             responseContent.Description.Should().Be(request.Description);
             responseContent.StartTime.Should().Be(request.StartTime);
             responseContent.EndTime.Should().Be(request.EndTime);
-            responseContent.Project.Should().BeEquivalentTo(project.ToResponse());
+            responseContent.ProjectId.Should().Be(project.Id);
 
             using (var dbContext = CreateDbContext())
             {
