@@ -135,7 +135,7 @@ namespace timer_app_tests.Controller
         }
 
         [Test]
-        public async Task CreateEvent_WhenProjectIsArchived_Returns422()
+        public async Task CreateEvent_WhenProjectIsArchived_Returns400()
         {
             // Arrange
             var request = _fixture.Create<CreateEventRequest>();
@@ -154,7 +154,7 @@ namespace timer_app_tests.Controller
             var statusCode = GetStatusCode(result);
 
             // Assert
-            statusCode.Should().Be(422);
+            statusCode.Should().Be(400);
             responseObject.Should().Be(exception.Message);
         }
 
@@ -262,7 +262,7 @@ namespace timer_app_tests.Controller
         }
 
         [Test]
-        public async Task UpdateEvent_WhenProjectIsArchived_Returns422()
+        public async Task UpdateEvent_WhenProjectIsArchived_Returns400()
         {
             // Arrange
             var query = _fixture.Create<EventQuery>();
@@ -279,7 +279,7 @@ namespace timer_app_tests.Controller
             var statusCode = GetStatusCode(result);
 
             // Assert
-            statusCode.Should().Be(422);
+            statusCode.Should().Be(400);
             responseObject.Should().Be(exception.Message);
         }
 

@@ -128,7 +128,7 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
-        public async Task CreateEvent_WhenProjectIsArchived_Returns422()
+        public async Task CreateEvent_WhenProjectIsArchived_Returns400()
         {
             // Arrange
             var url = new Uri($"/api/events", UriKind.Relative);
@@ -165,7 +165,7 @@ namespace timer_app_tests.E2ETests
 
             var stringResult = await response.Content.ReadAsStringAsync();
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             stringResult.Should().Be($"The project {project.Id} has been archived.");
         }
 

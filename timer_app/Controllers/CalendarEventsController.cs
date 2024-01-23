@@ -81,7 +81,7 @@ namespace timer_app.Controllers
             }
             catch (ProjectIsArchivedException e)
             {
-                return UnprocessableEntity(e.Message);
+                return BadRequest(e.Message);
             }
         }
 
@@ -117,7 +117,7 @@ namespace timer_app.Controllers
             }
             catch (ProjectIsArchivedException e)
             {
-                return UnprocessableEntity(e.Message);
+                return BadRequest(e.Message);
             }
         }
 

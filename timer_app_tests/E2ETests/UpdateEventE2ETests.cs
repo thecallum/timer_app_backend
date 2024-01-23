@@ -218,7 +218,7 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
-        public async Task UpdateEvent_WhenProjectArchived_Returns422()
+        public async Task UpdateEvent_WhenProjectArchived_Returns400()
         {
             // Arrange
             var userId = 1;
@@ -263,7 +263,7 @@ namespace timer_app_tests.E2ETests
             var stringResult = await response.Content.ReadAsStringAsync();
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             stringResult.Should().Be($"The project {project.Id} has been archived.");
         }
 
