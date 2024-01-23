@@ -61,7 +61,7 @@ namespace timer_app.Gateway
                 Darkest = request.ProjectColor.Darkest,
                 Dark = request.ProjectColor.Dark,
             };
-            
+
             _context.Entry(existingProject).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();

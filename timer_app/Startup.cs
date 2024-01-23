@@ -82,7 +82,8 @@ public class Startup
             .AllowAnyHeader()
             .AllowAnyMethod());
 
-        if (Environment.GetEnvironmentVariable("LOCAL_ENV") == "true") {
+        if (Environment.GetEnvironmentVariable("LOCAL_ENV") == "true")
+        {
             var context = app.ApplicationServices.GetRequiredService<TimerAppDbContext>();
             context.Database.Migrate();
         }
