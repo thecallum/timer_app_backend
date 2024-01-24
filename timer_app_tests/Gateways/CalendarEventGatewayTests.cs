@@ -258,13 +258,15 @@ namespace timer_app_tests.GatewayTests
             // Assert
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(request.ToDb(userId).ToResponse(), x => x.Excluding(x => x.Id));
-            result.Project.Should().BeEquivalentTo(project.ToResponse());
+            result.Project.Should().BeEquivalentTo(project.ToResponse(), options =>
+                options.Excluding(x => x.TotalEventDurationInMinutes));
 
             var dbResult = await GatewayTestHelpers.GetEvent(result.Id);
             dbResult.Should().NotBeNull();
 
             dbResult.Project.Should().NotBeNull();
-            dbResult.Project.Should().BeEquivalentTo(project);
+            dbResult.Project.Should().BeEquivalentTo(project.ToResponse(), options =>
+                options.Excluding(x => x.TotalEventDurationInMinutes));
         }
 
         [Test]
@@ -514,7 +516,8 @@ namespace timer_app_tests.GatewayTests
             var response = await _classUnderTest.UpdateEvent(calendarEvent.Id, request, userId);
 
             // Assert
-            response.Project.Should().BeEquivalentTo(project.ToResponse());
+            response.Project.Should().BeEquivalentTo(project.ToResponse(), options =>
+                options.Excluding(x => x.TotalEventDurationInMinutes));
 
             var dbResponse = await GatewayTestHelpers.GetEvent(calendarEvent.Id);
 

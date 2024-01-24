@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using timer_app.Boundary.Request;
+using timer_app.Boundary.Response;
 using timer_app.Factories;
 using timer_app.Gateway.Interfaces;
 using timer_app.Infrastructure;
@@ -7,6 +8,9 @@ using timer_app.Infrastructure.Exceptions;
 
 namespace timer_app.Gateway
 {
+
+
+
     public class ProjectGateway : IProjectGateway
     {
         private readonly TimerAppDbContext _context;
@@ -16,11 +20,19 @@ namespace timer_app.Gateway
             _context = context;
         }
 
-        public async Task<IEnumerable<Project>> GetAllProjects(int userId)
+        public async Task<IEnumerable<ProjectWithCount>> GetAllProjects(int userId)
         {
-            // may need to include a sum subquery for events under this project
             var projects = await _context.Projects
                 .Where(x => x.UserId == userId)
+                .Select(x => new ProjectWithCount
+                {
+                    Project = x,
+                    TotalEventDurationInMinutes = _context.CalendarEvents
+                        .Where(x => x.UserId == x.UserId)
+                        .Where(y => y.ProjectId == x.Id)
+                        .Select(x => (int)(x.EndTime - x.StartTime).TotalMinutes)
+                        .Sum()
+                })
                 .ToListAsync();
 
             return projects;

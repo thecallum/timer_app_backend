@@ -9,5 +9,6 @@ namespace timer_app.Boundary.Response
         public string Description { get; set; }
         public ProjectColorResponse ProjectColor { get; set; }
         public bool IsActive { get; set; }
+        public int TotalEventDurationInMinutes { get; set; }
     }
 }
