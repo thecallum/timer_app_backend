@@ -58,6 +58,51 @@ namespace timer_app_tests.GatewayTests
         }
 
         [Test]
+        public async Task GetAllProjects_WhenCalled_CalculatesDuration()
+        {
+            // Arrange
+            var userId = _fixture.Create<int>();
+
+            var project = _fixture.Build<Project>()
+                .With(x => x.UserId, userId)
+                .With(x => x.IsActive, true)
+                .Without(x => x.CalendarEvents)
+                .Create();
+
+            await GatewayTestHelpers.AddProjectsToDb(project);
+
+            var numberOfEvents = _randm.Next(2, 10);
+
+            var startTime = _fixture.Create<DateTime>();
+
+            var events = _fixture.Build<CalendarEvent>()
+                .With(x => x.UserId, userId)
+                .With(x => x.ProjectId, project.Id)
+                .With(x => x.StartTime, startTime)
+                .With(x => x.EndTime, startTime.AddMinutes(_randm.Next(2, 1000000)))
+                .Without(x => x.Project)
+                .CreateMany(numberOfEvents);
+
+            // remove first project to check filtering logic
+            events.First().ProjectId = null;
+
+            await GatewayTestHelpers.AddEventsToDb(events.ToArray());
+
+            // Act
+            var results = await _classUnderTest.GetAllProjects(userId);
+
+            // Assert
+            results.Should().HaveCount(1);
+
+            var expectedTotalDuration = events
+                .Where(x => x.ProjectId != null)
+                .Select(x => (int)(x.EndTime - x.StartTime).TotalMinutes)
+                .Sum();
+
+            results.First().TotalEventDurationInMinutes.Should().Be(expectedTotalDuration);
+        }
+
+        [Test]
         public async Task GetAllProjects_WhenNoProjectsFound_ReturnsEmptyList()
         {
             // Arrange
@@ -233,7 +278,7 @@ namespace timer_app_tests.GatewayTests
         {
             // Arrange
             var userId = _fixture.Create<int>();
-            
+
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.UserId, userId)

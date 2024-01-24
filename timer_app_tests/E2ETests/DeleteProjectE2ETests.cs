@@ -101,7 +101,7 @@ namespace timer_app_tests.E2ETests
             {
                 dbContext.Projects.Add(project);
                 await dbContext.SaveChangesAsync();
-            }            
+            }
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 

@@ -6,6 +6,8 @@ namespace timer_app.Factories
     public static class ResponseFactory
     {
 
+
+
         public static ProjectColorResponse ToResponse(this ProjectColor db)
         {
             return new ProjectColorResponse
@@ -21,6 +23,23 @@ namespace timer_app.Factories
         public static IEnumerable<ProjectResponse> ToResponse(this IEnumerable<Project> db)
         {
             return db.Select(x => x.ToResponse());
+        }
+
+        public static IEnumerable<ProjectResponse> ToResponse(this IEnumerable<ProjectWithCount> db)
+        {
+            return db.Select(x => x.ToResponse());
+        }
+
+        public static ProjectResponse ToResponse(this ProjectWithCount db)
+        {
+            return new ProjectResponse
+            {
+                Id = db.Project.Id,
+                Description = db.Project.Description,
+                ProjectColor = db.Project.ProjectColor.ToResponse(),
+                IsActive = db.Project.IsActive,
+                TotalEventDurationInMinutes = db.TotalEventDurationInMinutes
+            };
         }
 
         public static ProjectResponse ToResponse(this Project db)
