@@ -17,10 +17,10 @@ jobs:
         - setup_remote_docker
         - run:
             name: build
-            command: docker-compose build timer_app_tests
+            command: docker-compose build timer-app-tests
         - run:
             name: Run tests
-            command: docker-compose run timer_app_tests
+            command: docker-compose run timer-app-tests
   #
 #
 
