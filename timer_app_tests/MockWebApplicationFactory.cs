@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using timer_app;
 using timer_app.Infrastructure;
@@ -15,20 +16,48 @@ namespace timer_app_tests
             builder.ConfigureServices(services =>
             {
                 // Remove the existing DbContext configuration
-                var descriptor = services.SingleOrDefault(d =>
-                    d.ServiceType == typeof(DbContextOptions<TimerAppDbContext>));
+                //var descriptor = services.SingleOrDefault(d =>
+                //    d.ServiceType == typeof(DbContextOptions<TimerAppDbContext>));
 
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
+                //if (descriptor != null)
+                //{
+                //    services.Remove(descriptor);
+                //}
+
+                services.RemoveAll(typeof(DbContextOptions<TimerAppDbContext>));
+
+                services.RemoveAll<TimerAppDbContext>();
+
 
                 // Add DbContext with In-Memory database for testing
                 services.AddDbContext<TimerAppDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("IntegrationTestDb");
+                    options.UseInMemoryDatabase("integration");
                 });
+
+
+
+
+                var serviceProvider = services.BuildServiceProvider();
+                var scope = serviceProvider.CreateScope();
+
+
+                var dbContext = scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
+
+                    dbContext.Database.EnsureCreated();
+
+                    //dbContext.SeedData();
+
+                    dbContext.SaveChanges();
+                
             });
+
+
+            
+
+
+                        
+     
         }
 
         public void CleanupDb()
