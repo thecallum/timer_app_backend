@@ -12,7 +12,6 @@ package:
 functions:
 
   TimerAppApi:
-    name: Timer App API
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
     environment:
       CONNECTION_STRING: Host=${ssm:/timer-app/connection_string}
