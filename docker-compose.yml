@@ -22,24 +22,22 @@ services:
       dockerfile: timer_app_tests/Dockerfile
     ports:
       - 3001:3000
-    # environment:
-    #   - CONNECTION_STRING=Host=test-db:5466;Database=sampledb;Username=postgres;Password=mypassword
-    #   - LOCAL_ENV=true
-    # links:
-      # - test-db
+    environment:
+      - CONNECTION_STRING=Host=test-db;Database=sampledb;Username=postgres;Password=mypassword
+    links:
+      - test-db
 
-  # test-db:
-  #   image: postgres:12
-  #   container_name: test-db
-  #   ports:
-  #     - 5466:5432
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=mypassword
-  #     - POSTGRES_DB=sampledb
+  test-db:
+    image: postgres:12
+    ports:
+      - 2345:5432 
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=sampledb
 
   local-db:
-    image: postgres
+    image: postgres:12
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -47,15 +45,3 @@ services:
       - POSTGRES_DB=sampledb
     ports:
       - 5432:5432
-
-  # sample-database:
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=mypassword
-  #     - POSTGRES_DB=sampledb
-  #   image: sample-database
-  #   build:
-  #     context: .
-  #     dockerfile: database/Dockerfile
-  #   ports:
-  #     - 5433:5432

@@ -1,6 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0
 RUN dotnet tool install --global dotnet-ef --version 6.0.6
 
+
+ARG CONNECTION_STRING
+ENV CONNECTION_STRING=$CONNECTION_STRING
+
 # Copy csproj and restore as distinct layers
 COPY ./timer_app_backend.sln ./
 COPY ./timer_app/timer_app.csproj ./timer_app/
