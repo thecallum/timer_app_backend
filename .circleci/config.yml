@@ -7,18 +7,15 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
-
 orbs:
   aws-cli: circleci/aws-cli@2.0.6
-
 commands:
   migrate-database:
-    description: "Migrate database"
+    description: Migrate database
     parameters:
       stage:
         type: string
     steps:
-      # - *attach_workspace
       - checkout
       - setup_remote_docker
       - run:
@@ -29,69 +26,101 @@ commands:
           command: apt-get update && apt-get install unzip
       - run:
           name: Install AWS CLI
-          command: |
-            curl -L -o awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+          command: >
+            curl -L -o awscliv2.zip
+            "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+
             unzip awscliv2.zip
+
             ./aws/install
       - run:
           name: Install Session Manager plugin
-          command: |
-            curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+          command: >
+            curl
+            "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
+            -o "session-manager-plugin.deb"
+
             dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
-          command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path ./dotnet-ef-local/
+          command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path
+            ./dotnet-ef-local/
       - run:
           name: SSH into RDS and migrate database
-          command: |
+          command: >
             echo "cheese"
+
             echo <<parameters.stage>>
+
 
             echo "Setting AWS credentials..."
 
 
 
+
             echo export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+
             echo export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
+
             aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
+
             aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
+
 
             # aws configure
 
 
+
             PORT=$(aws ssm get-parameter --name /timer-app/development/db-port --query Parameter.Value)
+
             # PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
+
             echo ${PORT}
+
 
             aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
 
+
             cat ./private-key.pem
+
 
             chmod 400 ./private-key.pem
 
 
+
             HOST=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-hostname --query Parameter.Value)
+
             echo ${HOST}
 
+
             INSTANCE_NAME=$(aws ssm get-parameter --name timer-app-jumpbox-instance-name --query Parameter.Value)
+
             echo ${INSTANCE_NAME}
+
 
             ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
 
+
             PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
+
             echo ${PASSWORD}
 
+
             USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
+
             echo ${USERNAME}
 
+
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
+
             echo ${CONN_STR}
+
 
             cd ./timer_app/
 
-            CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.V2.Infrastructure.TimerAppDbContext
 
+            CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.V2.Infrastructure.TimerAppDbContext
   deploy-lambda:
     description: Deploys API via Serverless
     parameters:
@@ -127,7 +156,6 @@ jobs:
           aws-access-key-id: ${AWS_ACCESS_KEY_ID}
           aws-secret-access-key: ${AWS_SECRET_ACCESS_KEY}
           aws-region: eu-west-2
-
   deploy-to-development:
     executor: docker-dotnet
     steps:
@@ -142,12 +170,12 @@ jobs:
     executor: docker-dotnet
     steps:
       - migrate-database:
-          stage: "production"
+          stage: production
   migrate-database-development:
     executor: docker-dotnet
     steps:
       - migrate-database:
-          stage: "development"
+          stage: development
   check-code-formatting:
     executor: docker-dotnet
     steps:
@@ -172,15 +200,11 @@ jobs:
 workflows:
   test-and-deploy-development:
     jobs:
-      # - check-code-formatting
-      # - build-and-test
       - aws-cli-cred-setup:
           context: aws
       - migrate-database-development:
           requires:
             - aws-cli-cred-setup
-        #   - check-code-formatting
-        #   - build-and-test
       - deploy-to-development:
           requires:
             - migrate-database-development
