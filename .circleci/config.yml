@@ -7,6 +7,21 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
+
+  deploy-lambda:
+    description: "Deploys API via Serverless"
+    steps:
+      - *attach_workspace
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install AWS Lambda tools
+          command: dotnet tool install -g Amazon.Lambda.Tools
+      - run:
+          name: Deploy application
+          command: |
+            cd ./timer_app/
+            dotnet lambda deploy-serverless
 jobs:
   check-code-formatting:
     executor: docker-dotnet
@@ -38,6 +53,13 @@ workflows:
             branches:
               only: main
       - build-and-test:
+        filters:
+            branches:
+              only: main
+      - deploy-lambda:
+        requires:
+          - check-code-formatting
+          - build-and-test
         filters:
             branches:
               only: main
