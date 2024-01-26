@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using timer_app;
 using timer_app.Infrastructure;
@@ -12,28 +14,36 @@ namespace timer_app_tests
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.IntegrationTests.json")
+                .AddEnvironmentVariables()
+                .Build();
+
             builder.ConfigureServices(services =>
             {
-                // Remove the existing DbContext configuration
-                var descriptor = services.SingleOrDefault(d =>
-                    d.ServiceType == typeof(DbContextOptions<TimerAppDbContext>));
+                services.RemoveAll(typeof(DbContextOptions<TimerAppDbContext>));
+                services.RemoveAll<TimerAppDbContext>();
 
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
+                var connectionString = configuration["CONNECTION_STRING"];
+                services.AddDbContext<TimerAppDbContext>(options => options.UseNpgsql(connectionString));
 
-                // Add DbContext with In-Memory database for testing
-                services.AddDbContext<TimerAppDbContext>(options =>
-                {
-                    options.UseInMemoryDatabase("IntegrationTestDb");
-                });
-            });
+                var serviceProvider = services.BuildServiceProvider();
+                var scope = serviceProvider.CreateScope();
+
+                var dbContext = scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
+                dbContext.Database.EnsureDeleted();
+                dbContext.Database.EnsureCreated();
+                dbContext.SaveChanges();
+            })
+            .UseEnvironment("IntegrationTests");
         }
 
         public void CleanupDb()
         {
             using var dbContext = CreateDbContext();
+
+            dbContext.CalendarEvents.RemoveRange(dbContext.CalendarEvents);
+            dbContext.SaveChanges();
 
             dbContext.Projects.RemoveRange(dbContext.Projects);
             dbContext.SaveChanges();

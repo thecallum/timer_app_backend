@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
@@ -328,8 +329,8 @@ namespace timer_app_tests.E2ETests
                 dbResponse.Should().NotBeNull();
 
                 dbResponse.Description.Should().Be(request.Description);
-                dbResponse.StartTime.Should().Be(request.StartTime);
-                dbResponse.EndTime.Should().Be(request.EndTime);
+                dbResponse.StartTime.Should().BeCloseTo(request.StartTime, 1.Seconds());
+                dbResponse.EndTime.Should().BeCloseTo(request.EndTime, 1.Seconds());
                 dbResponse.ProjectId.Should().Be(project.Id);
             }
 

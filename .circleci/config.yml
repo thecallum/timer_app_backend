@@ -1,0 +1,44 @@
+version: 2.1
+
+executors:
+  docker-python:
+    docker:
+      - image: circleci/python:3.7
+  docker-dotnet:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
+jobs:
+  check-code-formatting:
+    executor: docker-dotnet
+    steps:
+      - checkout
+      - run:
+          name: Install dotnet format
+          command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
+      - run:
+          name: Run formatter check
+          command: ./dotnet-format-local/dotnet-format --check
+  build-and-test:
+      executor: docker-python
+      steps:
+        - checkout
+        - setup_remote_docker
+        - run:
+            name: build
+            command: docker-compose build timer-app-tests
+        - run:
+            name: Run tests
+            command: docker-compose run timer-app-tests
+
+workflows:
+  test-and-deploy-development: 
+    jobs:
+      - check-code-formatting:
+        filters:
+            branches:
+              only: main
+      - build-and-test:
+        filters:
+            branches:
+              only: main
+
