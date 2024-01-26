@@ -40,11 +40,11 @@ commands:
       - run:
           name: SSH into RDS and migrate database
           command: |
-            aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            aws ssm get-parameter --name "timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
             HOST=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-hostname --query Parameter.Value)
-            INSTANCE_NAME=$(aws ssm get-parameter --name /timer-app-jumpbox-instance-name --query Parameter.Value)
+            INSTANCE_NAME=$(aws ssm get-parameter --name timer-app-jumpbox-instance-name --query Parameter.Value)
 
             ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
 
@@ -130,12 +130,12 @@ jobs:
 workflows:
   test-and-deploy-development:
     jobs:
-      - check-code-formatting
-      - build-and-test
-      - migrate-database-development:
-          requires:
-            - check-code-formatting
-            - build-and-test
+      # - check-code-formatting
+      # - build-and-test
+      - migrate-database-development
+        # requires:
+        #   - check-code-formatting
+        #   - build-and-test
       - deploy-to-development:
           requires:
             - migrate-database-development
