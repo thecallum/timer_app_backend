@@ -16,8 +16,11 @@ jobs:
         - checkout
         - setup_remote_docker
         - run:
+            name: Install dotnet ef core
+            command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path ./dotnet-ef-local/
+        - run:
             name: Install AWS Lambda tools
-            command: dotnet tool install -g Amazon.Lambda.Tools
+            command: dotnet tool install -g Amazon.Lambda.Tools 
         - run:
             name: Deploy application
             command: |
