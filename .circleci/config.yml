@@ -45,7 +45,7 @@ commands:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path
             ./dotnet-ef-local/
-        - run:
+      - run:
           name: TEST
           command: export test=test
       - run:
