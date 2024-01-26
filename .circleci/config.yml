@@ -5,6 +5,16 @@ executors:
     docker:
       - image: circleci/python:3.7
 jobs:
+  check-code-formatting:
+    executor: docker-dotnet
+    steps:
+      - checkout
+      - run:
+          name: Install dotnet format
+          command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
+      - run:
+          name: Run formatter check
+          command: ./dotnet-format-local/dotnet-format --check
   build-and-test:
       executor: docker-python
       steps:
@@ -20,4 +30,5 @@ jobs:
 workflows:
   test-and-deploy: 
     jobs:
+      - check-code-formatting
       - build-and-test
