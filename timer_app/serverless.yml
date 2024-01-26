@@ -16,7 +16,7 @@ functions:
     name: timer-app-api-${self:provider.stage}
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
     environment:
-      CONNECTION_STRING: Host=${ssm:/timer-app/${self:provider.stage}/connection-string}
+      CONNECTION_STRING: Host=${ssm:/timer-app/${self:provider.stage}/db-hostname};Port=${ssm:/timer-app/${self:provider.stage}/db-port};Database=${ssm:/timer-app/${self:provider.stage}/db-database};Username=${ssm:/timer-app/${self:provider.stage}/db-username};Password=${ssm:/timer-app/${self:provider.stage}/db-password}
     events:
       - http:
           path: /{proxy+}
