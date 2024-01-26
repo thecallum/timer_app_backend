@@ -58,14 +58,14 @@ commands:
 
 
 
-            echo export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            # echo export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
-            echo export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            # echo export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
 
-            aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
+            # aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
 
-            aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
+            # aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
 
 
             # aws configure
@@ -153,8 +153,8 @@ jobs:
     executor: aws-cli/default
     steps:
       - aws-cli/setup:
-          aws-access-key-id: ${AWS_ACCESS_KEY_ID}
-          aws-secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           aws-region: eu-west-2
   deploy-to-development:
     executor: docker-dotnet
