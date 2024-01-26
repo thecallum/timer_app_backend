@@ -52,7 +52,9 @@ commands:
             echo <<parameters.stage>>
 
             echo "Getting port from /timer-app/development/db-port"
+
             PORT=$(aws ssm get-parameter --name /timer-app/development/db-port --query Parameter.Value)
+            
             # PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
             echo ${PORT}
 
