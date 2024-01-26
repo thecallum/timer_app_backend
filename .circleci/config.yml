@@ -9,33 +9,33 @@ executors:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
 
 commands:
-    deploy-lambda:
-      description: "Deploys API via Serverless"
-      parameters:
-        stage:
-          type: string
-      steps:
-        - checkout
-        - setup_remote_docker
-        - run:
-            name: Install Node.js
-            command: |
-              curl -sL https://deb.nodesource.com/setup_14.x | bash -
-              apt-get update && apt-get install -y nodejs
-        - run:
-            name: Install serverless CLI
-            command: npm i -g serverless
-        - run:
-            name: Build lambda
-            command: |
-              cd ./timer_app/
-              chmod +x ./build.sh
-              ./build.sh
-        - run:
-            name: Deploy application
-            command: |
-              cd ./timer_app/
-              sls deploy --stage <<parameters.stage>>
+  deploy-lambda:
+    description: "Deploys API via Serverless"
+    parameters:
+      stage:
+        type: string
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Node.js
+          command: |
+            curl -sL https://deb.nodesource.com/setup_14.x | bash -
+            apt-get update && apt-get install -y nodejs
+      - run:
+          name: Install serverless CLI
+          command: npm i -g serverless
+      - run:
+          name: Build lambda
+          command: |
+            cd ./timer_app/
+            chmod +x ./build.sh
+            ./build.sh
+      - run:
+          name: Deploy application
+          command: |
+            cd ./timer_app/
+            sls deploy --stage <<parameters.stage>>
 
 jobs:
     deploy-to-development:
@@ -77,26 +77,26 @@ workflows:
       - build-and-test
       - deploy-to-development:
           requires:
-              - check-code-formatting
-              - build-and-test
-              # filters:
-              #     branches:
-              #       only: main
+            - check-code-formatting
+            - build-and-test
+            # filters:
+            #     branches:
+            #       only: main
    test-and-deploy-production: 
     jobs:
       - check-code-formatting:
           filters:
-              branches:
-                only: release   
+            branches:
+              only: release   
       - build-and-test:
           filters:
-              branches:
-                only: release    
+            branches:
+              only: release    
       - deploy-to-production:
           requires:
-              - check-code-formatting
-              - build-and-test
+            - check-code-formatting
+            - build-and-test
           filters:
-              branches:
-                only: release                   
+            branches:
+              only: release                   
 
