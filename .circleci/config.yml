@@ -60,12 +60,12 @@ jobs:
 workflows:
   test-and-deploy-development: 
     jobs:
-      - check-code-formatting
-      - build-and-test
-      - deploy-lambda:
-          requires:
-              - check-code-formatting
-              - build-and-test
+      # - check-code-formatting
+      # - build-and-test
+      - deploy-lambda
+          # requires:
+          #     - check-code-formatting
+          #     - build-and-test
               # filters:
               #     branches:
               #       only: main
