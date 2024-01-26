@@ -47,7 +47,7 @@ commands:
             ./dotnet-ef-local/
       - run:
           name: SSH into RDS and migrate database
-          command: >
+          command: |
             echo "cheese"
             echo <<parameters.stage>>
 
