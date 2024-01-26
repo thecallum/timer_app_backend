@@ -20,12 +20,12 @@ jobs:
             command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path ./dotnet-ef-local/
         - run:
             name: Install AWS Lambda tools
-            command: dotnet tool install -g Amazon.Lambda.Tools 
+            command: dotnet tool install -g Amazon.Lambda.Tools
         - run:
             name: Deploy application
             command: |
               cd ./timer_app/
-              dotnet lambda deploy-serverless
+              dotnet lambda deploy-serverless --stack-name test-stack --s3-bucket timer-app
   check-code-formatting:
       executor: docker-dotnet
       steps:
