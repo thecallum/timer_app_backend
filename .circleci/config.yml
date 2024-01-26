@@ -42,7 +42,7 @@ commands:
           command: |
             echo "cheese"
             echo <<parameters.stage>>
-            aws ssm get-parameter --name "timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
 
             cat ./private-key.pem
 
