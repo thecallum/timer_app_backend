@@ -13,7 +13,6 @@ jobs:
     executor: docker-dotnet
     description: "Deploys API via Serverless"
     steps:
-      - *attach_workspace
       - checkout
       - setup_remote_docker
       - run:
@@ -49,19 +48,13 @@ jobs:
 workflows:
   test-and-deploy-development: 
     jobs:
-      - check-code-formatting:
-        filters:
-            branches:
-              only: main
-      - build-and-test:
-        filters:
-            branches:
-              only: main
+      - check-code-formatting
+      - build-and-test
       - deploy-lambda:
         requires:
           - check-code-formatting
           - build-and-test
-        filters:
-            branches:
-              only: main
+        # filters:
+        #     branches:
+        #       only: main
 
