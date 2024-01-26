@@ -56,7 +56,8 @@ commands:
             # aws configure
 
 
-            PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
+            PORT=$(aws ssm get-parameter --name /timer-app/development/db-port --query Parameter.Value)
+            # PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
             echo ${PORT}
 
             aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
