@@ -5,6 +5,7 @@ provider:
   memorySize: 2048
   region: eu-west-2
   timeout: 15
+  stage: ${opt:stage}
 
 package:
   artifact: ./bin/release/net6.0/timer_app.zip
@@ -12,28 +13,11 @@ package:
 functions:
 
   TimerAppApi:
+    name: timer-app-api-${self:provider.stage}
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
     environment:
-      CONNECTION_STRING: Host=${ssm:/timer-app/connection_string}
+      CONNECTION_STRING: Host=${ssm:/timer-app/${self:provider.stage}/connection-string}
     events:
       - http:
           path: /{proxy+}
           method: ANY
-          # authorizer:
-          #   arn: ${ssm:/api-authenticator/${self:provider.stage}/arn}
-          #   type: request
-          #   resultTtlInSeconds: 0
-          #   identitySource: method.request.header.Authorization
-          #   managedExternally: true
-          # cors:
-          #   origin: '*'
-          #   headers:
-          #     - Content-Type
-          #     - X-Amz-Date
-          #     - Authorization
-          #     - X-Api-Key
-          #     - X-Amz-Security-Token
-          #     - X-Amz-User-Agent
-          #     - x-correlation-id
-          #     - X-Hackney-User
-          #   allowCredentials: false
