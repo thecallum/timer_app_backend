@@ -1,5 +1,5 @@
+---
 version: 2.1
-
 executors:
   docker-python:
     docker:
@@ -7,10 +7,9 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
-
 commands:
   deploy-lambda:
-    description: "Deploys API via Serverless"
+    description: Deploys API via Serverless
     parameters:
       stage:
         type: string
@@ -36,42 +35,40 @@ commands:
           command: |
             cd ./timer_app/
             sls deploy --stage <<parameters.stage>>
-
 jobs:
-    deploy-to-development:
-        executor: docker-dotnet
-        steps:
-          - deploy-lambda:
-              stage: "development"
-    deploy-to-production:
-        executor: docker-dotnet
-        steps:
-          - deploy-lambda:
-              stage: "production"
+  deploy-to-development:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: development
+  deploy-to-production:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: production
   check-code-formatting:
-      executor: docker-dotnet
-      steps:
-        - checkout
-        - run:
-            name: Install dotnet format
-            command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
-        - run:
-            name: Run formatter check
-            command: ./dotnet-format-local/dotnet-format --check
+    executor: docker-dotnet
+    steps:
+      - checkout
+      - run:
+          name: Install dotnet format
+          command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
+      - run:
+          name: Run formatter check
+          command: ./dotnet-format-local/dotnet-format --check
   build-and-test:
-      executor: docker-python
-      steps:
-        - checkout
-        - setup_remote_docker
-        - run:
-            name: build
-            command: docker-compose build timer-app-tests
-        - run:
-            name: Run tests
-            command: docker-compose run timer-app-tests
-
+    executor: docker-python
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: build
+          command: docker-compose build timer-app-tests
+      - run:
+          name: Run tests
+          command: docker-compose run timer-app-tests
 workflows:
-  test-and-deploy-development: 
+  test-and-deploy-development:
     jobs:
       - check-code-formatting
       - build-and-test
@@ -79,24 +76,20 @@ workflows:
           requires:
             - check-code-formatting
             - build-and-test
-            # filters:
-            #     branches:
-            #       only: main
-   test-and-deploy-production: 
+  test-and-deploy-production:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: release   
+              only: release
       - build-and-test:
           filters:
             branches:
-              only: release    
+              only: release
       - deploy-to-production:
           requires:
             - check-code-formatting
             - build-and-test
           filters:
             branches:
-              only: release                   
-
+              only: release
