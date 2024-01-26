@@ -155,7 +155,7 @@ jobs:
       - aws-cli/setup:
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: eu-west-2
+          aws-region: AWS_REGION_NAME
   deploy-to-development:
     executor: docker-dotnet
     steps:
