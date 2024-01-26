@@ -33,14 +33,14 @@ commands:
             unzip awscliv2.zip
 
             ./aws/install
-      - run:
-          name: Install Session Manager plugin
-          command: >
-            curl
-            "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
-            -o "session-manager-plugin.deb"
+      # - run:
+      #     name: Install Session Manager plugin
+      #     command: >
+      #       curl
+      #       "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
+      #       -o "session-manager-plugin.deb"
 
-            dpkg -i session-manager-plugin.deb
+      #       dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path
@@ -51,10 +51,13 @@ commands:
             echo "cheese"
             echo <<parameters.stage>>
 
+            export test=test
+            echo "test: ${TEST} | TEST | $TEST"
+
             echo "Getting port from /timer-app/development/db-port"
 
             PORT=$(aws ssm get-parameter --name /timer-app/development/db-port --query Parameter.Value)
-            
+
             # PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
             echo ${PORT}
 
