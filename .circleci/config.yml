@@ -8,7 +8,9 @@ executors:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
 
+jobs:
   deploy-lambda:
+    executor: docker-dotnet
     description: "Deploys API via Serverless"
     steps:
       - *attach_workspace
@@ -22,7 +24,6 @@ executors:
           command: |
             cd ./timer_app/
             dotnet lambda deploy-serverless
-jobs:
   check-code-formatting:
     executor: docker-dotnet
     steps:
