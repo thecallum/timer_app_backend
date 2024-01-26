@@ -3,22 +3,8 @@ provider:
   name: aws
   runtime: dotnet6
   memorySize: 2048
-  # vpc: ${self:custom.vpc.${opt:stage}}
-  # stage: ${opt:stage}
   region: eu-west-2
   timeout: 15
-  # apiKeys:
-  #   - secureAccess:
-  #       - api-key-${self:service}-${self:provider.stage}
-  # usagePlan:
-  #   - secureAccess:
-  #       throttle:
-  #         burstLimit: 200
-  #         rateLimit: 100
-  # tracing:
-  #   lambda: true
-  #   apiGateway: true
-  # versionFunctions: false
 
 package:
   artifact: ./bin/release/net6.0/timer_app.zip
@@ -28,7 +14,6 @@ functions:
   TimerAppApi:
     name: Timer App API
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
-    role: lambdaExecutionRole
     environment:
       CONNECTION_STRING: Host=${ssm:/timer-app/connection_string}
     events:
