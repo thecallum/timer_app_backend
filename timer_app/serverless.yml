@@ -25,7 +25,7 @@ package:
 
 functions:
 
-  RepairsApi:
+  TimerAppApi:
     name: Timer App API
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
     role: lambdaExecutionRole
