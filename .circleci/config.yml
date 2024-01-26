@@ -52,9 +52,9 @@ workflows:
       - build-and-test
       - deploy-lambda:
         requires:
-          - check-code-formatting
-          - build-and-test
-        # filters:
-        #     branches:
-        #       only: main
+            - check-code-formatting
+            - build-and-test
+          # filters:
+          #     branches:
+          #       only: main
 
