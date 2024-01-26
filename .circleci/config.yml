@@ -40,6 +40,8 @@ commands:
       - run:
           name: SSH into RDS and migrate database
           command: |
+            echo "cheese"
+            echo <<parameters.stage>>
             aws ssm get-parameter --name "timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
