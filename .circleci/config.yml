@@ -45,15 +45,18 @@ commands:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path
             ./dotnet-ef-local/
+        - run:
+          name: TEST
+          command: export test=test
       - run:
           name: SSH into RDS and migrate database
           command: |
             echo "cheese"
             echo <<parameters.stage>>
 
-            export test=test
-
             
+
+
             echo "test: ${TEST} | TEST | $TEST"
 
             echo "Getting port from /timer-app/development/db-port"
