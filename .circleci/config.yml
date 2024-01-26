@@ -10,19 +10,19 @@ executors:
 
 jobs:
   deploy-lambda:
-    executor: docker-dotnet
-    description: "Deploys API via Serverless"
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Install AWS Lambda tools
-          command: dotnet tool install -g Amazon.Lambda.Tools
-      - run:
-          name: Deploy application
-          command: |
-            cd ./timer_app/
-            dotnet lambda deploy-serverless
+      executor: docker-dotnet
+      description: "Deploys API via Serverless"
+      steps:
+        - checkout
+        - setup_remote_docker
+        - run:
+            name: Install AWS Lambda tools
+            command: dotnet tool install -g Amazon.Lambda.Tools
+        - run:
+            name: Deploy application
+            command: |
+              cd ./timer_app/
+              dotnet lambda deploy-serverless
   check-code-formatting:
       executor: docker-dotnet
       steps:
