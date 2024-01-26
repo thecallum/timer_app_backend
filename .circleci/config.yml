@@ -16,16 +16,19 @@ jobs:
         - checkout
         - setup_remote_docker
         - run:
-            name: Install dotnet ef core
-            command: dotnet tool install -g dotnet-ef --version 6.0.6 
+            name: Install Node.js
+            command: |
+              curl -sL https://deb.nodesource.com/setup_14.x | bash -
+              apt-get update && apt-get install -y nodejs
         - run:
-            name: Install AWS Lambda tools
-            command: dotnet tool install -g Amazon.Lambda.Tools
+            name: Install serverless CLI
+            command: npm i -g serverless
         - run:
             name: Deploy application
             command: |
               cd ./timer_app/
-              dotnet lambda deploy-serverless --stack-name test-stack --s3-bucket timer-app
+              sls deploy
+
   check-code-formatting:
       executor: docker-dotnet
       steps:
