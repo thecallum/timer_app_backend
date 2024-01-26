@@ -51,10 +51,10 @@ workflows:
       - check-code-formatting
       - build-and-test
       - deploy-lambda:
-        requires:
-            - check-code-formatting
-            - build-and-test
-          # filters:
-          #     branches:
-          #       only: main
+          requires:
+              - check-code-formatting
+              - build-and-test
+              # filters:
+              #     branches:
+              #       only: main
 
