@@ -24,7 +24,7 @@ jobs:
             name: Install serverless CLI
             command: npm i -g serverless
         - run:
-          name: Build lambda
+            name: Build lambda
             command: |
               cd ./timer_app/
               chmod +x ./build.sh
