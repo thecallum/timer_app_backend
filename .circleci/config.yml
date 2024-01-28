@@ -51,18 +51,11 @@ commands:
       - run:
           name: SSH into RDS and migrate database
           command: |
-
-            # export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            # export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-
-            # aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            # aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set region eu-west-2
 
             PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
 
             aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
-
             cat ./private-key.pem
             chmod 400 ./private-key.pem
 
@@ -70,19 +63,17 @@ commands:
             INSTANCE_NAME=$(aws ssm get-parameter --name timer-app-jumpbox-instance-name --query Parameter.Value)
             PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
             USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
-
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
-            echo ${CONN_STR}
 
-            echo ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
+            ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
 
             cd ./timer_app/
 
-            CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.V2.Infrastructure.TimerAppDbContext
+            CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
   deploy-lambda:
     description: Deploys API via Serverless
     parameters:
-      stage:
+      stage:k
         type: string
     steps:
       - checkout
