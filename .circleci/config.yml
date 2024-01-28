@@ -52,14 +52,7 @@ commands:
             PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
             USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
 
-
-
-            # ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
-
-
             ssh -4 -Nf -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
-
-
 
             CONN_STR="Host=127.0.0.1;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
           
