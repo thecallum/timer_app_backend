@@ -141,14 +141,28 @@ jobs:
 workflows:
   test-and-deploy-development:
     jobs:
+      - check-code-formatting
+      - build-and-test
       - aws-cli-cred-setup:
           context: aws
+          requires:
+            - build-and-test
+            - check-code-formatting
+          filters:
+            branches:
+              only: main
       - migrate-database-development:
           requires:
             - aws-cli-cred-setup
+          filters:
+            branches:
+              only: main
       - deploy-to-development:
           requires:
             - migrate-database-development
+          filters:
+            branches:
+              only: release
   test-and-deploy-production:
     jobs:
       - check-code-formatting:
