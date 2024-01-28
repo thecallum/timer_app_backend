@@ -39,7 +39,7 @@ commands:
             ./dotnet-ef-local/
       - run:
           name: SSH into RDS and migrate database
-          command: >
+          command: |
             aws configure set region eu-west-2
 
             PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
