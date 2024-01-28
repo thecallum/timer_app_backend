@@ -59,11 +59,13 @@ commands:
 
             echo ssh -4 -Nf -L ${PORT//\"}:${HOST//\"}:${PORT//\"} ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
 
+            echo $CONN_STR
 
             cd ./timer_app/
             
+            export CONNECTION_STRING=${CONN_STR}
         
-            CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
+            ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
   deploy-lambda:
     description: Deploys API via Serverless
     parameters:
