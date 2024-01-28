@@ -1,5 +1,5 @@
+---
 version: 2.1
-
 executors:
   docker-python:
     docker:
@@ -7,61 +7,186 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
-
-jobs:
-  deploy-lambda:
-    executor: docker-dotnet
-    description: "Deploys API via Serverless"
+orbs:
+  aws-cli: circleci/aws-cli@2.0.6
+commands:
+  migrate-database:
+    description: Migrate database
+    parameters:
+      stage:
+        type: string
     steps:
-      - *attach_workspace
       - checkout
       - setup_remote_docker
       - run:
-          name: Install AWS Lambda tools
-          command: dotnet tool install -g Amazon.Lambda.Tools
+          name: Install SSH client
+          command: apt-get update && apt-get install -y openssh-client
+      - run:
+          name: Install Unzip
+          command: apt-get update && apt-get install unzip
+      - run:
+          name: Install AWS CLI
+          command: >
+            curl -L -o awscliv2.zip
+            "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+
+            unzip awscliv2.zip
+
+            ./aws/install
+      - run:
+          name: Install dotnet ef core
+          command: dotnet tool install dotnet-ef --version 6.0.26 --tool-path
+            ./dotnet-ef-local/
+      - run:
+          name: SSH into RDS and migrate database
+          command: |
+            aws configure set region eu-west-2
+
+            PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
+
+            aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            chmod 400 ./private-key.pem
+
+            HOST=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-hostname --query Parameter.Value)
+            INSTANCE_NAME=$(aws ssm get-parameter --name timer-app-jumpbox-instance-name --query Parameter.Value)
+            PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
+            USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
+
+            echo ssh -4 -Nf -L ${PORT//\"}:${HOST//\"}:${PORT//\"} ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
+
+
+
+            CONN_STR="Host=127.0.0.1;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
+          
+            cd ./timer_app/
+                    
+            echo CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
+  deploy-lambda:
+    description: Deploys API via Serverless
+    parameters:
+      stage:
+        type: string
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Node.js
+          command: |
+            curl -sL https://deb.nodesource.com/setup_14.x | bash -
+            apt-get update && apt-get install -y nodejs
+      - run:
+          name: Install serverless CLI
+          command: npm i -g serverless
+      - run:
+          name: Build lambda
+          command: |
+            cd ./timer_app/
+            chmod +x ./build.sh
+            ./build.sh
       - run:
           name: Deploy application
           command: |
             cd ./timer_app/
-            dotnet lambda deploy-serverless
+            sls deploy --stage <<parameters.stage>>
+jobs:
+  aws-cli-cred-setup:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_REGION_NAME
+  deploy-to-development:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: development
+  deploy-to-production:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: production
+  migrate-database-production:
+    executor: docker-dotnet
+    steps:
+      - migrate-database:
+          stage: production
+  migrate-database-development:
+    executor: docker-dotnet
+    steps:
+      - migrate-database:
+          stage: development
   check-code-formatting:
-      executor: docker-dotnet
-      steps:
-        - checkout
-        - run:
-            name: Install dotnet format
-            command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
-        - run:
-            name: Run formatter check
-            command: ./dotnet-format-local/dotnet-format --check
+    executor: docker-dotnet
+    steps:
+      - checkout
+      - run:
+          name: Install dotnet format
+          command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
+      - run:
+          name: Run formatter check
+          command: ./dotnet-format-local/dotnet-format --check
   build-and-test:
-      executor: docker-python
-      steps:
-        - checkout
-        - setup_remote_docker
-        - run:
-            name: build
-            command: docker-compose build timer-app-tests
-        - run:
-            name: Run tests
-            command: docker-compose run timer-app-tests
-
+    executor: docker-python
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: build
+          command: docker-compose build timer-app-tests
+      - run:
+          name: Run tests
+          command: docker-compose run timer-app-tests
 workflows:
-  test-and-deploy-development: 
+  test-and-deploy-development:
+    jobs:
+      - check-code-formatting
+      - build-and-test
+      - aws-cli-cred-setup:
+          context: aws
+          requires:
+            - build-and-test
+            - check-code-formatting
+          filters:
+            branches:
+              only: main
+      - migrate-database-development:
+          requires:
+            - aws-cli-cred-setup
+          filters:
+            branches:
+              only: main
+      - deploy-to-development:
+          requires:
+            - migrate-database-development
+          filters:
+            branches:
+              only: release
+  test-and-deploy-production:
     jobs:
       - check-code-formatting:
-        filters:
+          filters:
             branches:
-              only: main
+              only: release
       - build-and-test:
-        filters:
+          filters:
             branches:
-              only: main
-      - deploy-lambda:
-        requires:
-          - check-code-formatting
-          - build-and-test
-        filters:
+              only: release
+      - aws-cli-cred-setup:
+          context: aws
+          requires:
+            - check-code-formatting
+            - build-and-test
+          filters:
             branches:
-              only: main
-
+              only: release
+      - migrate-database-production:
+          requires:
+            - aws-cli-cred-setup
+      - deploy-to-production:
+          requires:
+            - migrate-database-production
+          filters:
+            branches:
+              only: release

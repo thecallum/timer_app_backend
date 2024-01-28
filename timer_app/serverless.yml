@@ -1,0 +1,23 @@
+service: timer-app
+provider:
+  name: aws
+  runtime: dotnet6
+  memorySize: 2048
+  region: eu-west-2
+  timeout: 15
+  stage: ${opt:stage}
+
+package:
+  artifact: ./bin/release/net6.0/timer_app.zip
+
+functions:
+
+  TimerAppApi:
+    name: timer-app-api-${self:provider.stage}
+    handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
+    environment:
+      CONNECTION_STRING: Host=${ssm:/timer-app/${self:provider.stage}/db-hostname};Port=${ssm:/timer-app/${self:provider.stage}/db-port};Database=${self:provider.stage};Username=${ssm:/timer-app/${self:provider.stage}/db-username};Password=${ssm:/timer-app/${self:provider.stage}/db-password}
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
