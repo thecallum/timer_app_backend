@@ -7,6 +7,8 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
+orbs:
+  aws-cli: circleci/aws-cli@2.0.6
 commands:
   migrate-database:
     description: Migrate database
@@ -137,7 +139,11 @@ jobs:
 workflows:
   test-and-deploy-development:
     jobs:
-      - migrate-database-development
+      - aws-cli-cred-setup:
+          context: aws
+      - migrate-database-development:
+          requires:
+            - aws-cli-cred-setup
       - deploy-to-development:
           requires:
             - migrate-database-development
