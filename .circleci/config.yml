@@ -162,7 +162,7 @@ workflows:
             - migrate-database-development
           filters:
             branches:
-              only: release
+              only: main
   test-and-deploy-production:
     jobs:
       - check-code-formatting:
