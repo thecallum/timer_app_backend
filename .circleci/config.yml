@@ -62,10 +62,8 @@ commands:
             echo $CONN_STR
 
             cd ./timer_app/
-            
-            export CONNECTION_STRING=${CONN_STR}
-        
-            ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
+                    
+            echo CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
   deploy-lambda:
     description: Deploys API via Serverless
     parameters:
