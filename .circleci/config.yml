@@ -52,15 +52,13 @@ commands:
             PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
             USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
 
-            echo ssh -4 -Nf -L ${PORT//\"}:${HOST//\"}:${PORT//\"} ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
-
-
+            ssh -4 -Nf -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
 
             CONN_STR="Host=127.0.0.1;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
           
             cd ./timer_app/
                     
-            echo CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
+            CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
   deploy-lambda:
     description: Deploys API via Serverless
     parameters:
