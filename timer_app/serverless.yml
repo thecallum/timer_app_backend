@@ -31,3 +31,4 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+          private: true
