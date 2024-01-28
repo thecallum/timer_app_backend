@@ -52,7 +52,7 @@ commands:
 
             # ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
 
-            ssh -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
+            ssh -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} ec2-user@${INSTANCE_NAME//\"} -i ./private-key.pem
 
 
             cd ./timer_app/
