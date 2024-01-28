@@ -148,21 +148,21 @@ workflows:
           requires:
             - build-and-test
             - check-code-formatting
-          filters:
-            branches:
-              only: main
+          # filters:
+          #   branches:
+          #     only: main
       - migrate-database-development:
           requires:
             - aws-cli-cred-setup
-          filters:
-            branches:
-              only: main
+          # filters:
+          #   branches:
+          #     only: main
       - deploy-to-development:
           requires:
             - migrate-database-development
-          filters:
-            branches:
-              only: main
+          # filters:
+          #   branches:
+          #     only: main
   test-and-deploy-production:
     jobs:
       - check-code-formatting:
