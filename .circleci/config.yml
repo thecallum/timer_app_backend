@@ -7,8 +7,6 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
-orbs:
-  aws-cli: circleci/aws-cli@2.0.6
 commands:
   migrate-database:
     description: Migrate database
@@ -33,47 +31,48 @@ commands:
             unzip awscliv2.zip
 
             ./aws/install
-      # - run:
-      #     name: Install Session Manager plugin
-      #     command: >
-      #       curl
-      #       "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
-      #       -o "session-manager-plugin.deb"
-
-      #       dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --version 6.0.26 --tool-path
             ./dotnet-ef-local/
       - run:
-          name: TEST
-          command: export test=test
-      - run:
           name: SSH into RDS and migrate database
-          command: |
+          command: >
             aws configure set region eu-west-2
+
 
             PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
 
+
             aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
+
             cat ./private-key.pem
+
             chmod 400 ./private-key.pem
 
+
             HOST=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-hostname --query Parameter.Value)
+
             INSTANCE_NAME=$(aws ssm get-parameter --name timer-app-jumpbox-instance-name --query Parameter.Value)
+
             PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
+
             USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
+
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
+
 
             ssh -4 -i ./private-key.pem -Nf -M -L ${PORT//\"}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ServerAliveInterval=0 -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
 
+
             cd ./timer_app/
+
 
             CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
   deploy-lambda:
     description: Deploys API via Serverless
     parameters:
-      stage:k
+      stage:
         type: string
     steps:
       - checkout
@@ -98,14 +97,6 @@ commands:
             cd ./timer_app/
             sls deploy --stage <<parameters.stage>>
 jobs:
-  aws-cli-cred-setup:
-    executor: aws-cli/default
-    steps:
-      - checkout
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_REGION_NAME
   deploy-to-development:
     executor: docker-dotnet
     steps:
@@ -150,11 +141,7 @@ jobs:
 workflows:
   test-and-deploy-development:
     jobs:
-      - aws-cli-cred-setup:
-          context: aws
-      - migrate-database-development:
-          requires:
-            - aws-cli-cred-setup
+      - migrate-database-development
       - deploy-to-development:
           requires:
             - migrate-database-development
