@@ -7,6 +7,8 @@ executors:
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
+orbs:
+  aws-cli: circleci/aws-cli@2.0.6
 commands:
   migrate-database:
     description: Migrate database
@@ -90,6 +92,14 @@ commands:
             cd ./timer_app/
             sls deploy --stage <<parameters.stage>>
 jobs:
+  aws-cli-cred-setup:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_REGION_NAME
   deploy-to-development:
     executor: docker-dotnet
     steps:
@@ -134,7 +144,11 @@ jobs:
 workflows:
   test-and-deploy-development:
     jobs:
-      - migrate-database-development
+      - aws-cli-cred-setup:
+          context: aws
+      - migrate-database-development:
+          requires:
+            - aws-cli-cred-setup
       - deploy-to-development:
           requires:
             - migrate-database-development
