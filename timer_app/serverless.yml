@@ -3,7 +3,13 @@ provider:
   name: aws
   runtime: dotnet6
   memorySize: 2048
-  vpc: vpc-2628074e
+  vpc:
+    securityGroupIds:
+      - sg-09a8d443d3adb43d6
+    subnetIds:
+      - subnet-860e73fc
+      - subnet-1d23a351
+      - subnet-2b003142
   region: eu-west-2
   timeout: 15
   stage: ${opt:stage}
