@@ -12,7 +12,7 @@ provider:
       - subnet-2b003142
   region: eu-west-2
   timeout: 300
-    apiKeys:
+  apiKeys:
     - secureAccess:
         - api-key-${self:service}-${self:provider.stage}
   stage: ${opt:stage}
