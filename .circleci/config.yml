@@ -43,7 +43,7 @@ commands:
       #       dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
-          command: dotnet tool install dotnet-ef --version 6.0.6 --tool-path
+          command: dotnet tool install dotnet-ef --version 6.0.26 --tool-path
             ./dotnet-ef-local/
       - run:
           name: TEST
@@ -52,34 +52,24 @@ commands:
           name: SSH into RDS and migrate database
           command: |
 
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            # export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            # export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            # aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            # aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set region eu-west-2
 
             PORT=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-port --query Parameter.Value)
-            echo ${PORT}
 
             aws ssm get-parameter --name "/timer-app-jumpbox-pem-key" --output text --query Parameter.Value > ./private-key.pem
 
             cat ./private-key.pem
-
             chmod 400 ./private-key.pem
 
             HOST=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-hostname --query Parameter.Value)
-            echo ${HOST}
-
             INSTANCE_NAME=$(aws ssm get-parameter --name timer-app-jumpbox-instance-name --query Parameter.Value)
-            echo ${INSTANCE_NAME}
-
-
             PASSWORD=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-password --query Parameter.Value)
-            echo ${PASSWORD}
-
             USERNAME=$(aws ssm get-parameter --name /timer-app/<<parameters.stage>>/db-username --query Parameter.Value)
-            echo ${USERNAME}
 
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
             echo ${CONN_STR}
