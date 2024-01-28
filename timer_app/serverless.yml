@@ -3,8 +3,18 @@ provider:
   name: aws
   runtime: dotnet6
   memorySize: 2048
+  vpc:
+    securityGroupIds:
+      - sg-09b6d6fe6fcc5086a
+    subnetIds:
+      - subnet-860e73fc
+      - subnet-1d23a351
+      - subnet-2b003142
   region: eu-west-2
-  timeout: 15
+  timeout: 300
+  apiGateway:
+    apiKeys:
+        - api-key-${self:service}-${self:provider.stage}
   stage: ${opt:stage}
 
 package:
@@ -21,3 +31,4 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+          private: true
