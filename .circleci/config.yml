@@ -157,10 +157,20 @@ workflows:
           filters:
             branches:
               only: release
-      - deploy-to-production:
+      - aws-cli-cred-setup:
+          context: aws
           requires:
             - check-code-formatting
             - build-and-test
+          filters:
+            branches:
+              only: release
+      - migrate-database-production:
+          requires:
+            - aws-cli-cred-setup
+      - deploy-to-production:
+          requires:
+            - migrate-database-production
           filters:
             branches:
               only: release
