@@ -13,8 +13,7 @@ provider:
   region: eu-west-2
   timeout: 300
   apiKeys:
-    - secureAccess:
-        - api-key-${self:service}-${self:provider.stage}
+      - api-key-${self:service}-${self:provider.stage}
   stage: ${opt:stage}
 
 package:
