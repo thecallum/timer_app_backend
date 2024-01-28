@@ -176,7 +176,10 @@ workflows:
           requires:
             - check-code-formatting
             - build-and-test
-        - aws-cli-cred-setup:
+          filters:
+            branches:
+              only: release
+      - aws-cli-cred-setup:
           context: aws
           requires:
             - approve-release
