@@ -171,11 +171,18 @@ workflows:
           filters:
             branches:
               only: release
-      - aws-cli-cred-setup:
-          context: aws
+      - approve-release:
+          type: approval
           requires:
             - check-code-formatting
             - build-and-test
+          filters:
+            branches:
+              only: release
+      - aws-cli-cred-setup:
+          context: aws
+          requires:
+            - approve-release
           filters:
             branches:
               only: release
