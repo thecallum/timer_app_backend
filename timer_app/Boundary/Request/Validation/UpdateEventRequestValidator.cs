@@ -7,7 +7,6 @@ namespace timer_app.Boundary.Request.Validation
         public UpdateEventRequestValidator()
         {
             RuleFor(x => x.Description)
-                .NotEmpty()
                 .MaximumLength(100);
 
             RuleFor(x => x.StartTime)
