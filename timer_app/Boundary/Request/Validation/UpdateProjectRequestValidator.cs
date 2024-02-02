@@ -8,7 +8,7 @@ namespace timer_app.Boundary.Request.Validation
         {
             RuleFor(x => x.Description)
                 .NotEmpty()
-                .MaximumLength(100);
+                .MaximumLength(30);
 
             RuleFor(x => x.ProjectColor)
                 .NotNull()
