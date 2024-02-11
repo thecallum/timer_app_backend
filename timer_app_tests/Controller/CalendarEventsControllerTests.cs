@@ -73,7 +73,7 @@ namespace timer_app_tests.Controller
             var useCaseResponse = _fixture.CreateMany<CalendarEventResponse>(numberOfResults);
 
             _getAllEventsUseCaseMock
-                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<string>()))
                 .ReturnsAsync(useCaseResponse);
 
             // Act
@@ -97,7 +97,7 @@ namespace timer_app_tests.Controller
             var exception = new ProjectNotFoundException((int)request.ProjectId);
 
             _createEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<string>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -115,13 +115,14 @@ namespace timer_app_tests.Controller
         {
             // Arrange
             var request = _fixture.Create<CreateEventRequest>();
+            var userId = _fixture.Create<string>();
 
             var numberOfResults = _random.Next(2, 5);
             var useCaseResponse = _fixture.CreateMany<CalendarEventResponse>(numberOfResults);
-            var exception = new UserUnauthorizedToAccessProjectException((int)request.ProjectId);
+            var exception = new UserUnauthorizedToAccessProjectException(userId);
 
             _createEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<string>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -145,7 +146,7 @@ namespace timer_app_tests.Controller
             var exception = new ProjectIsArchivedException((int)request.ProjectId);
 
             _createEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<string>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -166,7 +167,7 @@ namespace timer_app_tests.Controller
             var useCaseResponse = _fixture.Create<CalendarEventResponse>();
 
             _createEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<string>()))
                 .ReturnsAsync(useCaseResponse);
 
             // Act
@@ -187,7 +188,7 @@ namespace timer_app_tests.Controller
             var request = _fixture.Create<UpdateEventRequest>();
 
             _updateEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<string>()))
                 .ReturnsAsync((CalendarEventResponse)null);
 
             // Act
@@ -204,10 +205,11 @@ namespace timer_app_tests.Controller
             // Arrange
             var query = _fixture.Create<EventQuery>();
             var request = _fixture.Create<UpdateEventRequest>();
+            var userId = _fixture.Create<string>();
 
             _updateEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
-                .ThrowsAsync(new UserUnauthorizedToAccessEventException(query.EventId));
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<string>()))
+                .ThrowsAsync(new UserUnauthorizedToAccessEventException(userId));
 
             // Act
             var result = await _classUnderTest.UpdateEvent(query, request);
@@ -226,7 +228,7 @@ namespace timer_app_tests.Controller
             var exception = new ProjectNotFoundException(query.EventId);
 
             _updateEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<string>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -245,10 +247,12 @@ namespace timer_app_tests.Controller
             // Arrange
             var query = _fixture.Create<EventQuery>();
             var request = _fixture.Create<UpdateEventRequest>();
-            var exception = new UserUnauthorizedToAccessProjectException(query.EventId);
+            var userId = _fixture.Create<string>();
+
+            var exception = new UserUnauthorizedToAccessProjectException(userId);
 
             _updateEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<string>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -270,7 +274,7 @@ namespace timer_app_tests.Controller
             var exception = new ProjectIsArchivedException((int)request.ProjectId);
 
             _updateEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<string>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -293,7 +297,7 @@ namespace timer_app_tests.Controller
             var useCaseResponse = _fixture.Create<CalendarEventResponse>();
 
             _updateEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, request, It.IsAny<string>()))
                 .ReturnsAsync(useCaseResponse);
 
             // Act
@@ -313,7 +317,7 @@ namespace timer_app_tests.Controller
             var query = _fixture.Create<EventQuery>();
 
             _deleteEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, It.IsAny<string>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -329,10 +333,11 @@ namespace timer_app_tests.Controller
         {
             // Arrange
             var query = _fixture.Create<EventQuery>();
+            var userId = _fixture.Create<string>();
 
             _deleteEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, It.IsAny<int>()))
-                .ThrowsAsync(new UserUnauthorizedToAccessEventException(query.EventId));
+                .Setup(x => x.ExecuteAsync(query.EventId, It.IsAny<string>()))
+                .ThrowsAsync(new UserUnauthorizedToAccessEventException(userId));
 
             // Act
             var result = await _classUnderTest.DeleteEvent(query);
@@ -349,7 +354,7 @@ namespace timer_app_tests.Controller
             var query = _fixture.Create<EventQuery>();
 
             _deleteEventUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.EventId, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.EventId, It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             // Act

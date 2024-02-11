@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
@@ -9,6 +10,7 @@ namespace timer_app.Controllers
 {
     [Route("api/events")]
     [ApiController]
+    [Authorize]
     public class CalendarEventsController : ControllerBase
     {
         private readonly IGetAllEventsUseCase _getAllEventsUseCase;
@@ -21,7 +23,7 @@ namespace timer_app.Controllers
         private readonly IValidator<UpdateEventRequest> _updateEventRequestValidator;
 
 
-        private const int PlaceholderUserId = 1;
+        private const string PlaceholderUserId = "124";
 
         public CalendarEventsController(
             IGetAllEventsUseCase getAllEventsUseCase,

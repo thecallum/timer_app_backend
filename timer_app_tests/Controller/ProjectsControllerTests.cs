@@ -9,6 +9,7 @@ using timer_app.Infrastructure.Exceptions;
 using FluentValidation;
 using timer_app.Boundary.Request.Validation;
 using FluentValidation.Results;
+using timer_app.Middleware;
 
 namespace timer_app_tests.Controller
 {
@@ -23,6 +24,8 @@ namespace timer_app_tests.Controller
 
         private Mock<IValidator<CreateProjectRequest>> _createProjectRequestValidatorMock;
         private Mock<IValidator<UpdateProjectRequest>> _updateProjectRequestValidatorMock;
+
+        private Mock<ICurrentUserService> _currentUserServiceMock;
 
         private readonly Fixture _fixture = new Fixture();
         private readonly Random _random = new Random();
@@ -47,13 +50,17 @@ namespace timer_app_tests.Controller
                 .Setup(x => x.ValidateAsync(It.IsAny<UpdateProjectRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ValidationResult());
 
+            _currentUserServiceMock = new Mock<ICurrentUserService>();
+
+
             _classUnderTest = new ProjectsController(
                 _getAllProjectsUseCaseMock.Object,
                 _updateProjectUseCaseMock.Object,
                 _deleteProjectUseCaseMock.Object,
                 _createProjectUseCaseMock.Object,
                 _createProjectRequestValidatorMock.Object,
-                _updateProjectRequestValidatorMock.Object
+                _updateProjectRequestValidatorMock.Object,
+                _currentUserServiceMock.Object
             );
         }
 
@@ -65,7 +72,7 @@ namespace timer_app_tests.Controller
             var useCaseResponse = _fixture.CreateMany<ProjectResponse>(numberOfResults);
 
             _getAllProjectsUseCaseMock
-                .Setup(x => x.ExecuteAsync(It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(It.IsAny<string>()))
                 .ReturnsAsync(useCaseResponse);
 
             // Act
@@ -86,7 +93,7 @@ namespace timer_app_tests.Controller
             var useCaseResponse = _fixture.Create<ProjectResponse>();
 
             _createProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(request, It.IsAny<string>()))
                 .ReturnsAsync(useCaseResponse);
 
             // Act
@@ -106,7 +113,7 @@ namespace timer_app_tests.Controller
             var query = _fixture.Create<ProjectQuery>();
 
             _deleteProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<string>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -122,10 +129,11 @@ namespace timer_app_tests.Controller
         {
             // Arrange
             var query = _fixture.Create<ProjectQuery>();
+            var userId = _fixture.Create<string>();
 
             _deleteProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<int>()))
-                .ThrowsAsync(new UserUnauthorizedToAccessProjectException(query.ProjectId));
+                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<string>()))
+                .ThrowsAsync(new UserUnauthorizedToAccessProjectException(userId));
 
             // Act
             var result = await _classUnderTest.DeleteProject(query);
@@ -142,7 +150,7 @@ namespace timer_app_tests.Controller
             var query = _fixture.Create<ProjectQuery>();
 
             _deleteProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<string>()))
                 .ThrowsAsync(new ProjectIsArchivedException(query.ProjectId));
 
             // Act
@@ -161,7 +169,7 @@ namespace timer_app_tests.Controller
             var query = _fixture.Create<ProjectQuery>();
 
             _deleteProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.ProjectId, It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -180,7 +188,7 @@ namespace timer_app_tests.Controller
             var request = _fixture.Create<UpdateProjectRequest>();
 
             _updateProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<string>()))
                 .ReturnsAsync((ProjectResponse)null);
 
             // Act
@@ -197,10 +205,11 @@ namespace timer_app_tests.Controller
             // Arrange
             var query = _fixture.Create<ProjectQuery>();
             var request = _fixture.Create<UpdateProjectRequest>();
+            var userId = _fixture.Create<string>();
 
             _updateProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<int>()))
-               .ThrowsAsync(new UserUnauthorizedToAccessProjectException(query.ProjectId));
+                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<string>()))
+               .ThrowsAsync(new UserUnauthorizedToAccessProjectException(userId));
 
             // Act
             var result = await _classUnderTest.UpdateProject(query, request);
@@ -219,7 +228,7 @@ namespace timer_app_tests.Controller
             var request = _fixture.Create<UpdateProjectRequest>();
 
             _updateProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<string>()))
                .ThrowsAsync(new ProjectIsArchivedException(query.ProjectId));
 
             // Act
@@ -241,7 +250,7 @@ namespace timer_app_tests.Controller
             var useCaseResponse = _fixture.Create<ProjectResponse>();
 
             _updateProjectUseCaseMock
-                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<int>()))
+                .Setup(x => x.ExecuteAsync(query.ProjectId, request, It.IsAny<string>()))
                 .ReturnsAsync(useCaseResponse);
 
             // Act

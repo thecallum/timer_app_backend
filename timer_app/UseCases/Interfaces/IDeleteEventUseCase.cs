@@ -2,6 +2,6 @@
 {
     public interface IDeleteEventUseCase
     {
-        Task<bool> ExecuteAsync(int calendarEventId, int userId);
+        Task<bool> ExecuteAsync(int calendarEventId, string userId);
     }
 }

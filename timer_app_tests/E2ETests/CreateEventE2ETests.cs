@@ -93,8 +93,8 @@ namespace timer_app_tests.E2ETests
             // Arrange
             var url = new Uri($"/api/events", UriKind.Relative);
 
-            var userId = 1;
-            var otherUserId = 2;
+            var userId = "12345";
+            var otherUserId = "9876";
 
             using var dbContext = CreateDbContext();
 
@@ -136,7 +136,7 @@ namespace timer_app_tests.E2ETests
             // Arrange
             var url = new Uri($"/api/events", UriKind.Relative);
 
-            var userId = 1;
+            var userId = "12345";
 
             using var dbContext = CreateDbContext();
 
@@ -178,7 +178,7 @@ namespace timer_app_tests.E2ETests
             // Arrange
             var url = new Uri($"/api/events", UriKind.Relative);
 
-            var userId = 1;
+            var userId = "12345";
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)

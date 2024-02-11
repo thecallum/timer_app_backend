@@ -1,14 +1,18 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using timer_app.Boundary.Request;
 using timer_app.Infrastructure.Exceptions;
+using timer_app.Middleware;
 using timer_app.UseCases.Interfaces;
 
 namespace timer_app.Controllers
 {
     [Route("api/projects")]
     [ApiController]
+    [Authorize]
     public class ProjectsController : ControllerBase
     {
         private readonly IGetAllProjectsUseCase _getAllProjectsUseCase;
@@ -19,7 +23,9 @@ namespace timer_app.Controllers
         private readonly IValidator<CreateProjectRequest> _createProjectRequestValidator;
         private readonly IValidator<UpdateProjectRequest> _updateProjectRequestValidator;
 
-        private const int PlaceholderUserId = 1;
+        private readonly ICurrentUserService _currentUserService;
+
+        private const string PlaceholderUserId = "1234";
 
         public ProjectsController(
             IGetAllProjectsUseCase getAllProjectsUseCase,
@@ -27,7 +33,8 @@ namespace timer_app.Controllers
             IDeleteProjectUseCase deleteProjectUseCase,
             ICreateProjectUseCase createProjectUseCase,
             IValidator<CreateProjectRequest> createProjectRequestValidator,
-            IValidator<UpdateProjectRequest> updateProjectRequestValidator)
+            IValidator<UpdateProjectRequest> updateProjectRequestValidator,
+            ICurrentUserService currentUserService)
         {
             _getAllProjectsUseCase = getAllProjectsUseCase;
             _updateProjectUseCase = updateProjectUseCase;
@@ -35,6 +42,7 @@ namespace timer_app.Controllers
             _createProjectUseCase = createProjectUseCase;
             _createProjectRequestValidator = createProjectRequestValidator;
             _updateProjectRequestValidator = updateProjectRequestValidator;
+            _currentUserService = currentUserService;
         }
 
         [HttpPost]
@@ -104,7 +112,12 @@ namespace timer_app.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProjects()
         {
-            var projects = await _getAllProjectsUseCase.ExecuteAsync(PlaceholderUserId);
+
+            //  var x = HttpContext.User;
+
+            var userId = _currentUserService.GetId();
+
+            var projects = await _getAllProjectsUseCase.ExecuteAsync(userId);
 
             return Ok(projects);
         }

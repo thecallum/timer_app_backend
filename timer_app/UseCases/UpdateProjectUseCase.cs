@@ -15,7 +15,7 @@ namespace timer_app.UseCases
             _gateway = gateway;
         }
 
-        public async Task<ProjectResponse> ExecuteAsync(int projectId, UpdateProjectRequest request, int userId)
+        public async Task<ProjectResponse> ExecuteAsync(int projectId, UpdateProjectRequest request, string userId)
         {
             var project = await _gateway.UpdateProject(projectId, request, userId);
             if (project == null) return null;

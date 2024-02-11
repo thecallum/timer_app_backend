@@ -75,7 +75,8 @@ namespace timer_app_tests.E2ETests
         public async Task GetAllEvents_WhenCalled_Returns200()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
+
             var numberOfEvents = _random.Next(2, 5);
 
             var startTime = _fixture.Create<DateTime>();

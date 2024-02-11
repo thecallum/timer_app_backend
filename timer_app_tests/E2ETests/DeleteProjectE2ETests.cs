@@ -37,7 +37,7 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteProject_WhenUnauthorized_Returns401()
         {
             // Arrange
-            var otherUserId = 2;
+            var otherUserId = _fixture.Create<string>();
 
             using var dbContext = CreateDbContext();
 
@@ -63,7 +63,7 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteProject_WhenArchived_Returns422()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
 
             using var dbContext = CreateDbContext();
 
@@ -89,7 +89,7 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteProject_WhenProjectDeleted_Returns201()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)

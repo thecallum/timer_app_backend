@@ -33,7 +33,7 @@ namespace timer_app_tests.GatewayTests
             // Arrange
             var startTime = _fixture.Create<DateTime>();
             var endTime = startTime.AddDays(1);
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             // Act
             var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
@@ -48,8 +48,8 @@ namespace timer_app_tests.GatewayTests
             // Arrange
             var startTime = _fixture.Create<DateTime>();
             var endTime = startTime.AddDays(1);
-            var userId = _fixture.Create<int>();
-            var otherUserId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
+            var otherUserId = _fixture.Create<string>();
 
             var numberOfEvents = _random.Next(2, 6);
             var events = _fixture.Build<CalendarEvent>()
@@ -84,7 +84,7 @@ namespace timer_app_tests.GatewayTests
             // Arrange
             var startTime = _fixture.Create<DateTime>();
             var endTime = startTime.AddDays(1);
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -117,7 +117,7 @@ namespace timer_app_tests.GatewayTests
             // Arrange
             var startTime = _fixture.Create<DateTime>();
             var endTime = startTime.AddDays(1);
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var numberOfEvents = _random.Next(3, 10);
 
@@ -152,7 +152,7 @@ namespace timer_app_tests.GatewayTests
         public async Task CreateEvent_WhenCalled_CreatesEvent()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var request = _fixture.Build<CreateEventRequest>()
                 .Without(x => x.ProjectId)
                 .Create();
@@ -175,7 +175,7 @@ namespace timer_app_tests.GatewayTests
         public async Task CreateEvent_WhenProjectNotFound_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var request = _fixture.Create<CreateEventRequest>();
 
             // Act
@@ -189,7 +189,7 @@ namespace timer_app_tests.GatewayTests
         public async Task CreateEvent_WhenProjectNotOwnedByUser_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
@@ -213,7 +213,7 @@ namespace timer_app_tests.GatewayTests
         public async Task CreateEvent_WhenProjectArchived_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
@@ -238,7 +238,7 @@ namespace timer_app_tests.GatewayTests
         public async Task CreateEvent_WhenCalledWithProject_AssignsProjectToEvent()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -273,7 +273,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateEvent_WhenEventNotFound_ReturnsFalse()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var calendarEventId = _fixture.Create<int>();
 
             var request = _fixture.Build<UpdateEventRequest>()
@@ -291,7 +291,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateEvent_WhenEventDoesntBelongToUser_ThrowsUnauthorizedException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var otherUserId = userId + 1;
 
             var request = _fixture.Build<UpdateEventRequest>()
@@ -317,7 +317,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateEvent_WhenCalled_UpdatesEvent()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
@@ -356,7 +356,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateEvent_WhenProjectRemoved_RemoveProjectReference()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -396,7 +396,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateEvent_WhenProjectIdIncludedButNotFound_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var projectId = _fixture.Create<int>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
@@ -422,7 +422,7 @@ namespace timer_app_tests.GatewayTests
         public async Task WhenProjectIdIncludedButNotOwnedByUser_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var otherUserId = userId + 1;
 
             var project = _fixture.Build<Project>()
@@ -456,7 +456,7 @@ namespace timer_app_tests.GatewayTests
         public async Task WhenProjectIdIncludedButArchived_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var otherUserId = userId + 1;
 
             var project = _fixture.Build<Project>()
@@ -490,7 +490,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateEvent_WhenProjectIdIncluded_AddsProjectReference()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -531,7 +531,7 @@ namespace timer_app_tests.GatewayTests
         public async Task DeleteEvent_WhenNotFound_ReturnsFalse()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var calendarEventId = _fixture.Create<int>();
 
             // Act
@@ -545,7 +545,7 @@ namespace timer_app_tests.GatewayTests
         public async Task DeleteEvent_WhenItDoesntBelongToUser_ThrowsException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var otherUserId = userId + 1;
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
@@ -566,7 +566,7 @@ namespace timer_app_tests.GatewayTests
         public async Task DeleteEvent_WhenCalled_DeletesEvent()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)

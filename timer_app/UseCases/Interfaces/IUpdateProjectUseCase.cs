@@ -5,6 +5,6 @@ namespace timer_app.UseCases.Interfaces
 {
     public interface IUpdateProjectUseCase
     {
-        Task<ProjectResponse> ExecuteAsync(int projectId, UpdateProjectRequest request, int userId);
+        Task<ProjectResponse> ExecuteAsync(int projectId, UpdateProjectRequest request, string userId);
     }
 }

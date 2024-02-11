@@ -87,7 +87,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateProject_WhenUnauthorized_Returns401()
         {
             // Arrange
-            var otherUserId = 2;
+            var otherUserId = "sdfsdf";
 
             using var dbContext = CreateDbContext();
 
@@ -128,7 +128,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateProject_WhenArchived_Returns422()
         {
             // Arrange
-            var userId = 1;
+            var userId = "12345";
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
@@ -170,7 +170,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateProject_WhenUpdated_Returns200()
         {
             // Arrange
-            var userId = 1;
+            var userId = "12345";
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)

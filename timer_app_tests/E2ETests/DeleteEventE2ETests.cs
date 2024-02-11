@@ -37,7 +37,7 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteEvent_WhenUnauthorized_Returns401()
         {
             // Arrange
-            var otherUserId = 2;
+            var otherUserId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                .Without(x => x.Project)
@@ -64,7 +64,7 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteEvent_WhenSuccessful_Returns201()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                .Without(x => x.Project)

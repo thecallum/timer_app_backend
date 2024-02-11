@@ -2,6 +2,6 @@
 {
     public interface IDeleteProjectUseCase
     {
-        Task<bool> ExecuteAsync(int projectId, int userId);
+        Task<bool> ExecuteAsync(int projectId, string userId);
     }
 }

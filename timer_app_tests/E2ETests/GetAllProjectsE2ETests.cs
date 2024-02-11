@@ -25,7 +25,7 @@ namespace timer_app_tests.E2ETests
         public async Task GetAllProjects_WhenCalled_Returns200()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
             var numberOfProjects = _random.Next(2, 5);
 
             using (var dbContext = CreateDbContext())

@@ -14,7 +14,7 @@ namespace timer_app.UseCases
             _gateway = gateway;
         }
 
-        public async Task<IEnumerable<ProjectResponse>> ExecuteAsync(int userId)
+        public async Task<IEnumerable<ProjectResponse>> ExecuteAsync(string userId)
         {
             var projects = await _gateway.GetAllProjects(userId);
 

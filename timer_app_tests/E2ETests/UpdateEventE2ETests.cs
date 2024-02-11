@@ -87,7 +87,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateEvent_WhenEventNotOwnedByUser_Returns401()
         {
             // Arrange
-            var otherUserId = 2;
+            var otherUserId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, otherUserId)
@@ -128,7 +128,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateEvent_ProjectNotFound_Returns400()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                 .With(x => x.UserId, userId)
@@ -171,8 +171,8 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateEvent_WhenUserDoesntOwnProject_Returns400()
         {
             // Arrange
-            var userId = 1;
-            var otherUserId = 2;
+            var userId = _fixture.Create<string>();
+            var otherUserId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, otherUserId)
@@ -222,7 +222,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateEvent_WhenProjectArchived_Returns400()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -272,7 +272,7 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateEvent_WhenValid_Returns200()
         {
             // Arrange
-            var userId = 1;
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
