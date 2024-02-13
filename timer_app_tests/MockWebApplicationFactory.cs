@@ -16,7 +16,6 @@ using timer_app.Infrastructure;
 
 namespace timer_app_tests
 {
-
     public class MockWebApplicationFactory : WebApplicationFactory<Startup>
     {
         protected readonly Fixture _fixture = new Fixture();
@@ -74,7 +73,7 @@ namespace timer_app_tests
             dbContext.SaveChanges();
         }
 
-        private void ConfigureAuthentication(IServiceCollection services)
+        private static void ConfigureAuthentication(IServiceCollection services)
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
