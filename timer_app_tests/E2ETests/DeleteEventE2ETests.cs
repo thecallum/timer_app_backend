@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using FluentAssertions;
 using System.Net;
+using System.Net.Http.Headers;
 using timer_app.Infrastructure;
 
 namespace timer_app_tests.E2ETests
@@ -9,6 +10,7 @@ namespace timer_app_tests.E2ETests
     public class DeleteEventE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
+        private readonly string AccessToken = GenerateToken();
 
         private readonly Fixture _fixture = new Fixture();
 
@@ -26,8 +28,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events/{eventId}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -53,8 +58,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events/{calendarEvent.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -64,12 +72,10 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteEvent_WhenSuccessful_Returns201()
         {
             // Arrange
-            var userId = _fixture.Create<string>();
-
             var calendarEvent = _fixture.Build<CalendarEvent>()
                .Without(x => x.Project)
                .Without(x => x.ProjectId)
-               .With(x => x.UserId, userId)
+               .With(x => x.UserId, UserData.Sub)
                .Create();
 
             using (var dbContext = CreateDbContext())
@@ -80,8 +86,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events/{calendarEvent.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);

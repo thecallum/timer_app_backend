@@ -59,11 +59,17 @@ public class Startup
         var auth0Options = new Auth0Options();
         Configuration.Bind("Auth0", auth0Options);
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        var isTestEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test"
+                          || Configuration["TestEnvironment"] == "True";
+
+        if (!isTestEnvironment)
         {
-            options.Authority = auth0Options.Domain;
-            options.Audience = auth0Options.Audience;
-        });
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.Authority = auth0Options.Domain;
+                options.Audience = auth0Options.Audience;
+            });
+        }
     }
 
     private static void ConfigureValidators(IServiceCollection services)

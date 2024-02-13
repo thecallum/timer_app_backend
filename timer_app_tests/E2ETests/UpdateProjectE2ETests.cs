@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
@@ -14,6 +15,7 @@ namespace timer_app_tests.E2ETests
     public class UpdateProjectE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
+        private readonly string AccessToken = GenerateToken();
 
         private readonly Fixture _fixture = new Fixture();
 
@@ -31,6 +33,9 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{projectId}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             var request = new UpdateProjectRequest
             {
                 Description = "",
@@ -44,10 +49,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PutAsync(url, content);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -60,6 +65,9 @@ namespace timer_app_tests.E2ETests
             var projectId = _fixture.Create<int>();
 
             var url = new Uri($"/api/projects/{projectId}", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
             var request = new UpdateProjectRequest
             {
@@ -74,10 +82,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PutAsync(url, content);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -102,6 +110,9 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             var request = new UpdateProjectRequest
             {
                 Description = "Description",
@@ -115,10 +126,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PutAsync(url, content);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -128,11 +139,9 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateProject_WhenArchived_Returns422()
         {
             // Arrange
-            var userId = "12345";
-
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, userId)
+                .With(x => x.UserId, UserData.Sub)
                 .With(x => x.IsActive, false)
                 .Create();
 
@@ -144,6 +153,9 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             var request = new UpdateProjectRequest
             {
                 Description = "Description",
@@ -157,10 +169,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PutAsync(url, content);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -170,11 +182,9 @@ namespace timer_app_tests.E2ETests
         public async Task UpdateProject_WhenUpdated_Returns200()
         {
             // Arrange
-            var userId = "12345";
-
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, userId)
+                .With(x => x.UserId, UserData.Sub)
                 .With(x => x.IsActive, true)
                 .Create();
 
@@ -186,6 +196,9 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             var request = new UpdateProjectRequest
             {
                 Description = "Description",
@@ -199,10 +212,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PutAsync(url, content);
+            var response = await Client.SendAsync(requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
             var responseContent = JsonConvert.DeserializeObject<ProjectResponse>(stringResult);
