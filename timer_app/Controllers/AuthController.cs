@@ -14,22 +14,6 @@ namespace timer_app.Controllers
             _userGateway = userGateway;
         }
 
-        //[HttpGet]
-        //[Authorize]
-        //[Route("user")]
-        //public async Task<IActionResult> GetUser()
-        //{
-        //    var accessToken = Request.Headers["Authorization"].ToString();
-        //    var userData = await _userGateway.GetUserData(accessToken);
-
-        //    if (userData == null)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    return Ok(userData);
-        //}
-
         [HttpGet]
         public async Task<IActionResult> Authorize([FromQuery] string code)
         {

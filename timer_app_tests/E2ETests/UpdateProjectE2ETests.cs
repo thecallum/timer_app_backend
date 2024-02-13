@@ -164,7 +164,7 @@ namespace timer_app_tests.E2ETests
             // Arrange
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, false)
                 .Create();
 
@@ -207,7 +207,7 @@ namespace timer_app_tests.E2ETests
             // Arrange
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, true)
                 .Create();
 

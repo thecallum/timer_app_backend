@@ -160,7 +160,7 @@ namespace timer_app_tests.E2ETests
         {
             // Arrange
             var calendarEvent = _fixture.Build<CalendarEvent>()
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .Without(x => x.Project)
                 .Without(x => x.ProjectId)
                 .Create();
@@ -212,7 +212,7 @@ namespace timer_app_tests.E2ETests
                 .Create();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .Without(x => x.Project)
                 .Without(x => x.ProjectId)
                 .Create();
@@ -249,7 +249,7 @@ namespace timer_app_tests.E2ETests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            stringResult.Should().Be($"User {UserData.Sub} is not authorized to access the requested entity.");
+            stringResult.Should().Be($"User {UserData.Id} is not authorized to access the requested entity.");
         }
 
         [Test]
@@ -257,13 +257,13 @@ namespace timer_app_tests.E2ETests
         {
             // Arrange
             var project = _fixture.Build<Project>()
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, false)
                 .Without(x => x.CalendarEvents)
                 .Create();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .Without(x => x.Project)
                 .Without(x => x.ProjectId)
                 .Create();
@@ -308,14 +308,14 @@ namespace timer_app_tests.E2ETests
         {
             // Arrange
             var project = _fixture.Build<Project>()
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, true)
                 .Without(x => x.CalendarEvents)
                 .Create();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
-                .With(x => x.UserId, UserData.Sub)
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
+                .With(x => x.UserId, UserData.Id)
                 .Without(x => x.Project)
                 .Without(x => x.ProjectId)
                 .Create();

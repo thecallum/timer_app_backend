@@ -111,14 +111,14 @@ namespace timer_app_tests.E2ETests
             {
                 var project = _fixture.Build<Project>()
                     .Without(x => x.CalendarEvents)
-                    .With(x => x.UserId, UserData.Sub)
+                    .With(x => x.UserId, UserData.Id)
                     .Create();
 
                 dbContext.Projects.Add(project);
                 await dbContext.SaveChangesAsync();
 
                 var events = _fixture.Build<CalendarEvent>()
-                    .With(x => x.UserId, UserData.Sub)
+                    .With(x => x.UserId, UserData.Id)
                     .With(x => x.ProjectId, project.Id)
                     .With(x => x.StartTime, startTime.AddHours(2))
                     .With(x => x.EndTime, endTime.AddHours(2))

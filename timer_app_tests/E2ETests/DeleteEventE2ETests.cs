@@ -96,7 +96,7 @@ namespace timer_app_tests.E2ETests
             var calendarEvent = _fixture.Build<CalendarEvent>()
                .Without(x => x.Project)
                .Without(x => x.ProjectId)
-               .With(x => x.UserId, UserData.Sub)
+               .With(x => x.UserId, UserData.Id)
                .Create();
 
             using (var dbContext = CreateDbContext())

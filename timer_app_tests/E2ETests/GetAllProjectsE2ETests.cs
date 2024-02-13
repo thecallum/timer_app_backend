@@ -59,7 +59,7 @@ namespace timer_app_tests.E2ETests
             {
                 var projects = _fixture.Build<Project>()
                     .Without(x => x.CalendarEvents)
-                    .With(x => x.UserId, UserData.Sub)
+                    .With(x => x.UserId, UserData.Id)
                     .CreateMany(numberOfProjects);
 
                 dbContext.Projects.AddRange(projects);

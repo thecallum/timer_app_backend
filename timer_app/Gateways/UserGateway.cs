@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RestSharp;
+using System.Net;
 using timer_app.Domain;
 using timer_app.Gateways.Interfaces;
 
@@ -25,24 +26,19 @@ namespace timer_app.Gateways
 
             var response = await client.ExecuteAsync(request);
 
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
                 return null;
             }
 
             var responseData = JObject.Parse(response.Content);
-            var userData = new Auth0User
-            {
-                Sub = responseData["sub"].ToString(),
-                Nickname = responseData["nickname"].ToString(),
-                Name = responseData["name"].ToString(),
-                Picture = responseData["picture"].ToString(),
-                UpdatedAt = responseData["updated_at"].ToString(),
-                Email = responseData["email"].ToString(),
-                EmailVerified = responseData["email_verified"].ToString() == "true"
-            };
 
-            return userData;
+            return new Auth0User
+            {
+                Id = responseData["sub"].ToString(),
+                Name = responseData["name"].ToString(),
+                Email = responseData["email"].ToString(),
+            };
         }
 
         public async Task<string> AuthorizeUser(string code)

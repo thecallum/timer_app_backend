@@ -33,9 +33,8 @@ namespace timer_app.Middleware
             var identity = new ClaimsIdentity();
 
             identity.AddClaim(new Claim(ClaimTypes.Name, userData.Name));
-            identity.AddClaim(new Claim(ClaimTypes.GivenName, userData.Nickname));
             identity.AddClaim(new Claim(ClaimTypes.Email, userData.Email));
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userData.Sub));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userData.Id));
 
             return identity;
         }

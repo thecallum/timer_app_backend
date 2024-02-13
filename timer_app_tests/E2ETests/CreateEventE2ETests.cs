@@ -148,7 +148,7 @@ namespace timer_app_tests.E2ETests
             var stringResult = await response.Content.ReadAsStringAsync();
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            stringResult.Should().Be($"User {UserData.Sub} is not authorized to access the requested entity.");
+            stringResult.Should().Be($"User {UserData.Id} is not authorized to access the requested entity.");
         }
 
         [Test]
@@ -159,7 +159,7 @@ namespace timer_app_tests.E2ETests
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, false)
                 .Create();
 
@@ -196,7 +196,7 @@ namespace timer_app_tests.E2ETests
             // Arrange
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, UserData.Sub)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, true)
                 .Create();
 

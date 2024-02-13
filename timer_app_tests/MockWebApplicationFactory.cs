@@ -26,13 +26,9 @@ namespace timer_app_tests
     {
         protected Auth0User UserData = new Auth0User
         {
-            Sub = "1234abcd",
-            Nickname = "",
-            Name = "",
-            Picture = "",
-            UpdatedAt = "",
-            Email = "",
-            EmailVerified = true
+            Id = "1234abcd",
+            Name = "Steve",
+            Email = "steve@stevemail.com",
         };
 
         private const string TokenIssuer = "https://your-auth0-domain/";
