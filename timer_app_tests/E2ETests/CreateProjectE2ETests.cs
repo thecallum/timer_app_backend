@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using AutoFixture;
+using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
@@ -16,6 +17,7 @@ namespace timer_app_tests.E2ETests
         private readonly string AccessToken = GenerateToken();
 
         private HttpRequestMessage _requestMessage;
+        private readonly Fixture _fixture = new Fixture();
 
         [SetUp]
         public void Setup()
@@ -32,6 +34,24 @@ namespace timer_app_tests.E2ETests
         public void TearDown()
         {
             CleanupDb();
+        }
+
+        [Test]
+        public async Task CreateProject_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateProjectRequest>();
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            _requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(_requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Test]

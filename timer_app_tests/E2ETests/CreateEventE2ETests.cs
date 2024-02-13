@@ -40,6 +40,24 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
+        public async Task CreateEvent_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateEventRequest>();
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            _requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(_requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Test]
         public async Task CreateEvent_WhenInvalidData_ReturnsBadRequest()
         {
             // Arrange

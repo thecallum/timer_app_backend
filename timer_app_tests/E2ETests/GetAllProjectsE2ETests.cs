@@ -37,6 +37,19 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
+        public async Task GetAllProjects_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            _requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(_requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Test]
         public async Task GetAllProjects_WhenCalled_Returns200()
         {
             // Arrange
@@ -52,8 +65,6 @@ namespace timer_app_tests.E2ETests
                 dbContext.Projects.AddRange(projects);
                 await dbContext.SaveChangesAsync();
             }
-
-            var url = new Uri($"/api/projects/", UriKind.Relative);
 
             // Act
             var response = await Client.SendAsync(_requestMessage);

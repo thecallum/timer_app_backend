@@ -1,7 +1,10 @@
 ﻿using AutoFixture;
 using FluentAssertions;
+using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
+using timer_app.Boundary.Request;
 using timer_app.Infrastructure;
 
 namespace timer_app_tests.E2ETests
@@ -18,6 +21,24 @@ namespace timer_app_tests.E2ETests
         public void TearDown()
         {
             CleanupDb();
+        }
+
+        [Test]
+        public async Task DeleteEvent_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var eventId = _fixture.Create<int>();
+
+            var url = new Uri($"/api/events/{eventId}", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Test]
@@ -39,7 +60,7 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
-        public async Task DeleteEvent_WhenUnauthorized_Returns401()
+        public async Task DeleteEvent_WhenEventNotOwnedByUser_Returns401()
         {
             // Arrange
             var otherUserId = _fixture.Create<string>();

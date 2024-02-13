@@ -26,13 +26,32 @@ namespace timer_app_tests.E2ETests
             CleanupDb();
         }
 
-        static string FormatDate(DateTime dateTime)
+        private static string FormatDate(DateTime dateTime)
         {
             // Format the DateTime in a URL-safe way (ISO 8601 format)
             string formattedDate = dateTime.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
 
             // Return the URL-encoded date string
             return Uri.EscapeDataString(formattedDate);
+        }
+
+        [Test]
+        public async Task GetAllEvents_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var startTime = _fixture.Create<DateTime>();
+            var endTime = startTime.AddDays(-2);
+
+            var url = new Uri($"/api/events?startTime={FormatDate(startTime)}&endTime={FormatDate(endTime)}", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Test]
