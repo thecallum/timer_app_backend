@@ -1,12 +1,15 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Reflection;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
 using timer_app.Gateway;
 using timer_app.Gateway.Interfaces;
+using timer_app.Gateways;
+using timer_app.Gateways.Interfaces;
 using timer_app.Infrastructure;
+using timer_app.Middleware;
+using timer_app.Middleware.Interfaces;
 using timer_app.UseCases;
 using timer_app.UseCases.Interfaces;
 
@@ -29,10 +32,15 @@ public class Startup
         services.AddCors();
         services.AddControllers();
 
+        ConfigureJwtAuthentication(services);
+
         ConfigureValidators(services);
 
         services.AddTransient<ICalendarEventsGateway, CalendarEventsGateway>();
         services.AddTransient<IProjectGateway, ProjectGateway>();
+        services.AddTransient<IUserGateway, UserGateway>();
+
+        services.AddScoped<IUserService, UserService>();
 
         services.AddTransient<ICreateEventUseCase, CreateEventUseCase>();
         services.AddTransient<ICreateProjectUseCase, CreateProjectUseCase>();
@@ -43,8 +51,25 @@ public class Startup
         services.AddTransient<IUpdateEventUseCase, UpdateEventUseCase>();
         services.AddTransient<IUpdateProjectUseCase, UpdateProjectUseCase>();
 
-
         ConfigureDbContext(services);
+    }
+
+    private void ConfigureJwtAuthentication(IServiceCollection services)
+    {
+        var auth0Options = new Auth0Options();
+        Configuration.Bind("Auth0", auth0Options);
+
+        var isTestEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test"
+                          || Configuration["TestEnvironment"] == "True";
+
+        if (!isTestEnvironment)
+        {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.Authority = auth0Options.Domain;
+                options.Audience = auth0Options.Audience;
+            });
+        }
     }
 
     private static void ConfigureValidators(IServiceCollection services)
@@ -84,15 +109,21 @@ public class Startup
 
         if (Environment.GetEnvironmentVariable("LOCAL_ENV") == "true")
         {
-            var context = app.ApplicationServices.GetRequiredService<TimerAppDbContext>();
+            var scope = app.ApplicationServices.CreateScope();
+
+            var context = scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
             context.Database.Migrate();
         }
+
 
         app.UseHttpsRedirection();
 
         app.UseRouting();
 
+        app.UseAuthentication();
+
         app.UseAuthorization();
+        app.UseMiddleware<UserMiddleware>();
 
         app.UseEndpoints(endpoints =>
         {

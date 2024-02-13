@@ -1,6 +1,8 @@
-﻿using FluentAssertions;
+﻿using AutoFixture;
+using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
@@ -12,6 +14,20 @@ namespace timer_app_tests.E2ETests
     public class CreateProjectE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
+        private readonly string AccessToken = GenerateToken();
+
+        private HttpRequestMessage _requestMessage;
+
+        [SetUp]
+        public void Setup()
+        {
+            var url = new Uri($"/api/projects", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
+            _requestMessage = requestMessage;
+        }
 
         [TearDown]
         public void TearDown()
@@ -20,10 +36,27 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
+        public async Task CreateProject_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateProjectRequest>();
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            _requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(_requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Test]
         public async Task CreateProject_WhenInvalidData_ReturnsBadRequest()
         {
             // Arrange
-            var url = new Uri($"/api/projects", UriKind.Relative);
             var request = new CreateProjectRequest
             {
                 Description = "",
@@ -37,10 +70,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -50,7 +83,6 @@ namespace timer_app_tests.E2ETests
         public async Task CreateProject_WhenProjectCreated_Returns200()
         {
             // Arrange
-            var url = new Uri($"/api/projects", UriKind.Relative);
             var request = new CreateProjectRequest
             {
                 Description = "Description1234",
@@ -64,10 +96,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
             var responseContent = JsonConvert.DeserializeObject<ProjectResponse>(stringResult);

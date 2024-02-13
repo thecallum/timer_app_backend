@@ -2,13 +2,11 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Newtonsoft.Json;
-using System.Globalization;
 using System.Net;
-using System.Reflection.Metadata;
+using System.Net.Http.Headers;
 using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
-using timer_app.Factories;
 using timer_app.Infrastructure;
 
 namespace timer_app_tests.E2ETests
@@ -17,11 +15,20 @@ namespace timer_app_tests.E2ETests
     public class CreateEventE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
+        private readonly string AccessToken = GenerateToken();
 
-        private readonly Fixture _fixture = new Fixture();
-        private readonly Random _random = new Random();
+        private HttpRequestMessage _requestMessage;
 
+        [SetUp]
+        public void Setup()
+        {
+            var url = new Uri($"/api/events", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
+            _requestMessage = requestMessage;
+        }
 
         [TearDown]
         public void TearDown()
@@ -30,11 +37,27 @@ namespace timer_app_tests.E2ETests
         }
 
         [Test]
+        public async Task CreateEvent_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateEventRequest>();
+
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            _requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(_requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Test]
         public async Task CreateEvent_WhenInvalidData_ReturnsBadRequest()
         {
             // Arrange
-            var url = new Uri($"/api/events", UriKind.Relative);
-
             var startTime = _fixture.Create<DateTime>();
             var endTime = startTime.AddDays(-1);
 
@@ -47,10 +70,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -60,8 +83,6 @@ namespace timer_app_tests.E2ETests
         public async Task CreateEvent_WhenProjectNotFound_ReturnsBadRequest()
         {
             // Arrange
-            var url = new Uri($"/api/events", UriKind.Relative);
-
             var startTime = _fixture.Create<DateTime>();
             var endTime = startTime.AddDays(1);
             var projectId = _fixture.Create<int>();
@@ -75,10 +96,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
 
@@ -91,10 +112,7 @@ namespace timer_app_tests.E2ETests
         public async Task CreateEvent_WhenUserDoesntOwnProject_ReturnsBadRequest()
         {
             // Arrange
-            var url = new Uri($"/api/events", UriKind.Relative);
-
-            var userId = 1;
-            var otherUserId = 2;
+            var otherUserId = "9876";
 
             using var dbContext = CreateDbContext();
 
@@ -119,30 +137,26 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            stringResult.Should().Be($"User {userId} is not authorized to access the requested entity.");
+            stringResult.Should().Be($"User {UserData.Id} is not authorized to access the requested entity.");
         }
 
         [Test]
         public async Task CreateEvent_WhenProjectIsArchived_Returns400()
         {
             // Arrange
-            var url = new Uri($"/api/events", UriKind.Relative);
-
-            var userId = 1;
-
             using var dbContext = CreateDbContext();
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, userId)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, false)
                 .Create();
 
@@ -161,12 +175,13 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
+
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             stringResult.Should().Be($"The project {project.Id} has been archived.");
@@ -176,13 +191,9 @@ namespace timer_app_tests.E2ETests
         public async Task CreateEvent_WhenValid_Returns200()
         {
             // Arrange
-            var url = new Uri($"/api/events", UriKind.Relative);
-
-            var userId = 1;
-
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, userId)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, true)
                 .Create();
 
@@ -204,10 +215,10 @@ namespace timer_app_tests.E2ETests
             };
 
             var jsonRequest = JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await Client.PostAsync(url, content);
+            var response = await Client.SendAsync(_requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
             var responseContent = JsonConvert.DeserializeObject<CalendarEventResponse>(stringResult);

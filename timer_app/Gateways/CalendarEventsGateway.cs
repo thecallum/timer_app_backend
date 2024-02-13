@@ -16,7 +16,7 @@ namespace timer_app.Gateway
             _context = context;
         }
 
-        public async Task<IEnumerable<CalendarEvent>> GetAllEvents(int userId, DateTime? startTime, DateTime? endTime)
+        public async Task<IEnumerable<CalendarEvent>> GetAllEvents(string userId, DateTime? startTime, DateTime? endTime)
         {
             var query = _context.CalendarEvents
                 .Include(x => x.Project)
@@ -36,7 +36,7 @@ namespace timer_app.Gateway
             return await query.ToListAsync();
         }
 
-        public async Task<CalendarEvent> CreateEvent(CreateEventRequest request, int userId)
+        public async Task<CalendarEvent> CreateEvent(CreateEventRequest request, string userId)
         {
             var calendarEvent = request.ToDb(userId);
 
@@ -52,7 +52,7 @@ namespace timer_app.Gateway
             return calendarEvent;
         }
 
-        private static void VerifyProject(Project project, int projectId, int userId)
+        private static void VerifyProject(Project project, int projectId, string userId)
         {
             // verify project exists
             if (project == null)
@@ -74,7 +74,7 @@ namespace timer_app.Gateway
             }
         }
 
-        public async Task<CalendarEvent> UpdateEvent(int calendarEventId, UpdateEventRequest request, int userId)
+        public async Task<CalendarEvent> UpdateEvent(int calendarEventId, UpdateEventRequest request, string userId)
         {
             var existingCalendarEvent = await _context.CalendarEvents.FindAsync(calendarEventId);
             if (existingCalendarEvent == null) return null;
@@ -110,7 +110,7 @@ namespace timer_app.Gateway
             return existingCalendarEvent;
         }
 
-        public async Task<bool> DeleteEvent(int calendarEventId, int userId)
+        public async Task<bool> DeleteEvent(int calendarEventId, string userId)
         {
             var calendarEvent = await _context.CalendarEvents.FindAsync(calendarEventId);
             if (calendarEvent == null) return false;

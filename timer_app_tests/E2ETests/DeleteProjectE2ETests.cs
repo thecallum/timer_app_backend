@@ -1,6 +1,10 @@
 ﻿using AutoFixture;
 using FluentAssertions;
+using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using timer_app.Boundary.Request;
 using timer_app.Infrastructure;
 
 namespace timer_app_tests.E2ETests
@@ -9,13 +13,30 @@ namespace timer_app_tests.E2ETests
     public class DeleteProjectE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
-
-        private readonly Fixture _fixture = new Fixture();
+        private readonly string AccessToken = GenerateToken();
 
         [TearDown]
         public void TearDown()
         {
             CleanupDb();
+        }
+
+        [Test]
+        public async Task DeleteProject_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var projectId = _fixture.Create<int>();
+
+            var url = new Uri($"/api/projects/{projectId}", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Test]
@@ -26,18 +47,21 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{projectId}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Test]
-        public async Task DeleteProject_WhenUnauthorized_Returns401()
+        public async Task DeleteProject_WhenProjectNotOwnedByUser_Returns401()
         {
             // Arrange
-            var otherUserId = 2;
+            var otherUserId = _fixture.Create<string>();
 
             using var dbContext = CreateDbContext();
 
@@ -52,8 +76,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -63,13 +90,11 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteProject_WhenArchived_Returns422()
         {
             // Arrange
-            var userId = 1;
-
             using var dbContext = CreateDbContext();
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, userId)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, false)
                 .Create();
 
@@ -78,8 +103,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -89,11 +117,9 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteProject_WhenProjectDeleted_Returns201()
         {
             // Arrange
-            var userId = 1;
-
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
-                .With(x => x.UserId, userId)
+                .With(x => x.UserId, UserData.Id)
                 .With(x => x.IsActive, true)
                 .Create();
 
@@ -105,8 +131,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/projects/{project.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);

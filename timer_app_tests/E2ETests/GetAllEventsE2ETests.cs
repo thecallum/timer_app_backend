@@ -3,6 +3,7 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
@@ -14,9 +15,7 @@ namespace timer_app_tests.E2ETests
     public class GetAllEventsE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
-
-        private readonly Fixture _fixture = new Fixture();
-        private readonly Random _random = new Random();
+        private readonly string AccessToken = GenerateToken();
 
         [TearDown]
         public void TearDown()
@@ -24,13 +23,32 @@ namespace timer_app_tests.E2ETests
             CleanupDb();
         }
 
-        static string FormatDate(DateTime dateTime)
+        private static string FormatDate(DateTime dateTime)
         {
             // Format the DateTime in a URL-safe way (ISO 8601 format)
             string formattedDate = dateTime.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
 
             // Return the URL-encoded date string
             return Uri.EscapeDataString(formattedDate);
+        }
+
+        [Test]
+        public async Task GetAllEvents_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var startTime = _fixture.Create<DateTime>();
+            var endTime = startTime.AddDays(-2);
+
+            var url = new Uri($"/api/events?startTime={FormatDate(startTime)}&endTime={FormatDate(endTime)}", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Test]
@@ -42,8 +60,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events?startTime={FormatDate(startTime)}&endTime={FormatDate(endTime)}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.GetAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -58,8 +79,11 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events?startTime={FormatDate(startTime)}&endTime={FormatDate(endTime)}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act
-            var response = await Client.GetAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
             var responseContent = JsonConvert.DeserializeObject<IEnumerable<CalendarEventResponse>>(stringResult);
@@ -75,7 +99,6 @@ namespace timer_app_tests.E2ETests
         public async Task GetAllEvents_WhenCalled_Returns200()
         {
             // Arrange
-            var userId = 1;
             var numberOfEvents = _random.Next(2, 5);
 
             var startTime = _fixture.Create<DateTime>();
@@ -85,14 +108,14 @@ namespace timer_app_tests.E2ETests
             {
                 var project = _fixture.Build<Project>()
                     .Without(x => x.CalendarEvents)
-                    .With(x => x.UserId, userId)
+                    .With(x => x.UserId, UserData.Id)
                     .Create();
 
                 dbContext.Projects.Add(project);
                 await dbContext.SaveChangesAsync();
 
                 var events = _fixture.Build<CalendarEvent>()
-                    .With(x => x.UserId, userId)
+                    .With(x => x.UserId, UserData.Id)
                     .With(x => x.ProjectId, project.Id)
                     .With(x => x.StartTime, startTime.AddHours(2))
                     .With(x => x.EndTime, endTime.AddHours(2))
@@ -105,6 +128,8 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events?startTime={FormatDate(startTime)}&endTime={FormatDate(endTime)}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
             var request = new GetAllEventsRequest
             {
@@ -113,7 +138,7 @@ namespace timer_app_tests.E2ETests
             };
 
             // Act
-            var response = await Client.GetAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             var stringResult = await response.Content.ReadAsStringAsync();
             var responseContent = JsonConvert.DeserializeObject<IEnumerable<CalendarEventResponse>>(stringResult);

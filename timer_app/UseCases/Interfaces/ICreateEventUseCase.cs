@@ -5,6 +5,6 @@ namespace timer_app.UseCases.Interfaces
 {
     public interface ICreateEventUseCase
     {
-        Task<CalendarEventResponse> ExecuteAsync(CreateEventRequest request, int userId);
+        Task<CalendarEventResponse> ExecuteAsync(CreateEventRequest request, string userId);
     }
 }
