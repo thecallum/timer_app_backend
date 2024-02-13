@@ -35,7 +35,11 @@ namespace timer_app_tests
             EmailVerified = true
         };
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+        private const string TokenIssuer = "https://your-auth0-domain/";
+        private const string TokenAudience = "https://localhost:50086/";
+        private const string TokenKey = "89f6ac7859e58d5ef58a780b04a7757b0e2a0f5cf66168de1f95b8b2e0ab03cb";
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.IntegrationTests.json")
@@ -52,55 +56,54 @@ namespace timer_app_tests
 
             builder.ConfigureServices(services =>
             {
-                services.RemoveAll(typeof(DbContextOptions<TimerAppDbContext>));
-                services.RemoveAll<TimerAppDbContext>();
-
-                var connectionString = configuration["CONNECTION_STRING"];
-                services.AddDbContext<TimerAppDbContext>(options => options.UseNpgsql(connectionString));
-
-                var serviceProvider = services.BuildServiceProvider();
-                var scope = serviceProvider.CreateScope();
-
-                var dbContext = scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
-                dbContext.Database.EnsureDeleted();
-                dbContext.Database.EnsureCreated();
-                dbContext.SaveChanges();
-
-
-                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-                {
-                    options.IncludeErrorDetails = true;
-
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = "https://your-auth0-domain/", // Match this with your token's issuer
-
-                        ValidateAudience = true,
-                        ValidAudience = "https://localhost:50086/", // Match this with your token's audience
-
-                        ValidateLifetime = true, // to validate the expiration and not before values in the token
-
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("89f6ac7859e58d5ef58a780b04a7757b0e2a0f5cf66168de1f95b8b2e0ab03cb")), // Use the same key you used to sign your test tokens
-
-                        // Ensure the clock skew is reasonable to prevent issues with token expiration
-                        ClockSkew = TimeSpan.Zero
-                    };
-                });
-
-
-
-                services.RemoveAll<UserGateway>();
-                services.AddTransient<IUserGateway>(x =>
-                {
-                    var instance = new MockUserGateway(UserData);
-
-                    return instance;
-                });
-
+                ConfigureDbContext(services, configuration);
+                ConfigureAuthentication(services);
+                ConfigureMockUserGateway(services);
             })
             .UseEnvironment("IntegrationTests");
+        }
+
+        private static void ConfigureDbContext(IServiceCollection services, IConfigurationRoot configuration)
+        {
+            services.RemoveAll(typeof(DbContextOptions<TimerAppDbContext>));
+            services.RemoveAll<TimerAppDbContext>();
+
+            var connectionString = configuration["CONNECTION_STRING"];
+            services.AddDbContext<TimerAppDbContext>(options => options.UseNpgsql(connectionString));
+
+            var serviceProvider = services.BuildServiceProvider();
+            var scope = serviceProvider.CreateScope();
+
+            var dbContext = scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
+            dbContext.Database.EnsureDeleted();
+            dbContext.Database.EnsureCreated();
+            dbContext.SaveChanges();
+        }
+
+        private static void ConfigureAuthentication(IServiceCollection services)
+        {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.IncludeErrorDetails = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = TokenIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = TokenAudience,
+                    ValidateLifetime = true, 
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenKey)),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+        }
+
+        private void ConfigureMockUserGateway(IServiceCollection services)
+        {
+            services.RemoveAll<UserGateway>();
+            services.AddTransient<IUserGateway>(x => new MockUserGateway(UserData));
         }
 
         protected void CleanupDb()
@@ -122,20 +125,10 @@ namespace timer_app_tests
 
         protected static string GenerateToken()
         {
-            var token = TokenHelper.GenerateToken(
-                  issuer: "https://your-auth0-domain/",
-                  audience: "https://localhost:50086/",
-                  expiry: DateTime.UtcNow.AddHours(1),
-                  claims: new Dictionary<string, string>
-                  {
-                                { ClaimTypes.NameIdentifier, "test-user-id" },
-                                { ClaimTypes.Email, "test@example.com" }
-                      // Add other claims as needed
-                  },
-                  signingKey: "89f6ac7859e58d5ef58a780b04a7757b0e2a0f5cf66168de1f95b8b2e0ab03cb"
-              );
+            var expiry = DateTime.UtcNow.AddHours(1);
+            var claims = new Dictionary<string, string>();
 
-            return token;
+            return TokenHelper.GenerateToken(TokenIssuer, TokenAudience, expiry, claims, TokenKey);
         }
     }
 }
