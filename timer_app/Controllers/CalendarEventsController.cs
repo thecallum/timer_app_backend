@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
 using timer_app.Infrastructure.Exceptions;
+using timer_app.Middleware.Interfaces;
 using timer_app.UseCases.Interfaces;
 
 namespace timer_app.Controllers
@@ -22,8 +23,7 @@ namespace timer_app.Controllers
         private readonly IValidator<GetAllEventsRequest> _getAllEventsRequestValidator;
         private readonly IValidator<UpdateEventRequest> _updateEventRequestValidator;
 
-
-        private const string PlaceholderUserId = "124";
+        private readonly IUserService _currentUserService;
 
         public CalendarEventsController(
             IGetAllEventsUseCase getAllEventsUseCase,
@@ -32,7 +32,8 @@ namespace timer_app.Controllers
             IDeleteEventUseCase deleteEventUseCase,
             IValidator<CreateEventRequest> createEventRequestValidator,
             IValidator<GetAllEventsRequest> getAllEventsRequestValidator,
-            IValidator<UpdateEventRequest> updateEventRequestValidator)
+            IValidator<UpdateEventRequest> updateEventRequestValidator,
+            IUserService currentUserService)
         {
             _getAllEventsUseCase = getAllEventsUseCase;
             _createEventUseCase = createEventUseCase;
@@ -41,6 +42,7 @@ namespace timer_app.Controllers
             _createEventRequestValidator = createEventRequestValidator;
             _getAllEventsRequestValidator = getAllEventsRequestValidator;
             _updateEventRequestValidator = updateEventRequestValidator;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet]
@@ -53,7 +55,9 @@ namespace timer_app.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var calendarEvents = await _getAllEventsUseCase.ExecuteAsync(request, PlaceholderUserId);
+            var userId = _currentUserService.GetId();
+
+            var calendarEvents = await _getAllEventsUseCase.ExecuteAsync(request, userId);
 
             return Ok(calendarEvents);
         }
@@ -68,9 +72,11 @@ namespace timer_app.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
+            var userId = _currentUserService.GetId();
+
             try
             {
-                var calendarEvent = await _createEventUseCase.ExecuteAsync(request, PlaceholderUserId);
+                var calendarEvent = await _createEventUseCase.ExecuteAsync(request, userId);
                 return Ok(calendarEvent);
             }
             catch (ProjectNotFoundException e)
@@ -98,9 +104,11 @@ namespace timer_app.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
+            var userId = _currentUserService.GetId();
+
             try
             {
-                var response = await _updateEventUseCase.ExecuteAsync(query.EventId, request, PlaceholderUserId);
+                var response = await _updateEventUseCase.ExecuteAsync(query.EventId, request, userId);
                 if (response == null) return NotFound(query.EventId);
 
                 return Ok(response);
@@ -127,9 +135,11 @@ namespace timer_app.Controllers
         [Route("{eventId}")]
         public async Task<IActionResult> DeleteEvent([FromRoute] EventQuery query)
         {
+            var userId = _currentUserService.GetId();
+
             try
             {
-                var response = await _deleteEventUseCase.ExecuteAsync(query.EventId, PlaceholderUserId);
+                var response = await _deleteEventUseCase.ExecuteAsync(query.EventId, userId);
                 if (!response) return NotFound(query.EventId);
 
                 return NoContent();

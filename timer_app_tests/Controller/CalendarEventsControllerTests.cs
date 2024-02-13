@@ -8,6 +8,7 @@ using timer_app.Boundary.Request;
 using timer_app.Infrastructure.Exceptions;
 using FluentValidation;
 using FluentValidation.Results;
+using timer_app.Middleware.Interfaces;
 
 namespace timer_app_tests.Controller
 {
@@ -24,6 +25,7 @@ namespace timer_app_tests.Controller
         private Mock<IValidator<GetAllEventsRequest>> _getAllEventsRequestValidatorMock;
         private Mock<IValidator<UpdateEventRequest>> _updateEventRequestValidatorMock;
 
+        private Mock<IUserService> _currentUserServiceMock;
 
         private readonly Fixture _fixture = new Fixture();
         private readonly Random _random = new Random();
@@ -52,6 +54,8 @@ namespace timer_app_tests.Controller
                 .Setup(x => x.ValidateAsync(It.IsAny<UpdateEventRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ValidationResult());
 
+            _currentUserServiceMock = new Mock<IUserService>();
+
             _classUnderTest = new CalendarEventsController(
                 _getAllEventsUseCaseMock.Object,
                 _createEventUseCaseMock.Object,
@@ -59,7 +63,8 @@ namespace timer_app_tests.Controller
                 _deleteEventUseCaseMock.Object,
                 _createEventRequestValidatorMock.Object,
                 _getAllEventsRequestValidatorMock.Object,
-                _updateEventRequestValidatorMock.Object
+                _updateEventRequestValidatorMock.Object,
+                _currentUserServiceMock.Object
             );
         }
 

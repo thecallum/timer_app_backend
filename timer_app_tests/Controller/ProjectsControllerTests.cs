@@ -9,7 +9,7 @@ using timer_app.Infrastructure.Exceptions;
 using FluentValidation;
 using timer_app.Boundary.Request.Validation;
 using FluentValidation.Results;
-using timer_app.Middleware;
+using timer_app.Middleware.Interfaces;
 
 namespace timer_app_tests.Controller
 {
@@ -25,7 +25,7 @@ namespace timer_app_tests.Controller
         private Mock<IValidator<CreateProjectRequest>> _createProjectRequestValidatorMock;
         private Mock<IValidator<UpdateProjectRequest>> _updateProjectRequestValidatorMock;
 
-        private Mock<ICurrentUserService> _currentUserServiceMock;
+        private Mock<IUserService> _currentUserServiceMock;
 
         private readonly Fixture _fixture = new Fixture();
         private readonly Random _random = new Random();
@@ -50,7 +50,7 @@ namespace timer_app_tests.Controller
                 .Setup(x => x.ValidateAsync(It.IsAny<UpdateProjectRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ValidationResult());
 
-            _currentUserServiceMock = new Mock<ICurrentUserService>();
+            _currentUserServiceMock = new Mock<IUserService>();
 
 
             _classUnderTest = new ProjectsController(
