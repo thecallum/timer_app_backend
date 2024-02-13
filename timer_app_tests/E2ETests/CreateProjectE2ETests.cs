@@ -17,7 +17,6 @@ namespace timer_app_tests.E2ETests
         private readonly string AccessToken = GenerateToken();
 
         private HttpRequestMessage _requestMessage;
-        private readonly Fixture _fixture = new Fixture();
 
         [SetUp]
         public void Setup()

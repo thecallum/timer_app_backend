@@ -16,9 +16,6 @@ namespace timer_app_tests.E2ETests
 
         private HttpRequestMessage _requestMessage;
 
-        private readonly Fixture _fixture = new Fixture();
-        private readonly Random _random = new Random();
-
         [SetUp]
         public void Setup()
         {

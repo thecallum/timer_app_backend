@@ -17,8 +17,6 @@ namespace timer_app_tests.E2ETests
         public HttpClient Client => CreateClient();
         private readonly string AccessToken = GenerateToken();
 
-        private readonly Fixture _fixture = new Fixture();
-
         [TearDown]
         public void TearDown()
         {
