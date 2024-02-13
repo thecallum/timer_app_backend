@@ -36,7 +36,7 @@ namespace timer_app.Middleware
             identity.AddClaim(new Claim(ClaimTypes.GivenName, userData.Nickname));
             identity.AddClaim(new Claim(ClaimTypes.Email, userData.Email));
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userData.Sub));
-            
+
             return identity;
         }
 
