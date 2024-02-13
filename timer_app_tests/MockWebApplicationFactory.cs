@@ -85,7 +85,7 @@ namespace timer_app_tests
                     ValidIssuer = TokenIssuer,
                     ValidateAudience = true,
                     ValidAudience = TokenAudience,
-                    ValidateLifetime = true, 
+                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenKey)),
                     ClockSkew = TimeSpan.Zero
