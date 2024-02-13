@@ -57,12 +57,6 @@ commands:
             CONN_STR="Host=127.0.0.1;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=<<parameters.stage>>"
           
             cd ./timer_app/
-
-            Auth0__Domain=placeholder
-            Auth0__ClientId=placeholder
-            Auth0__ClientSecret=placeholder
-            Auth0__Audience=placeholder
-            Auth0__RedirectUri=placeholder
                     
             CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update -c timer_app.Infrastructure.TimerAppDbContext
   deploy-lambda:
