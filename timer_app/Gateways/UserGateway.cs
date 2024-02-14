@@ -8,6 +8,13 @@ namespace timer_app.Gateways
 {
     public class UserGateway : IUserGateway
     {
+        private readonly ILogger<IUserGateway> _logger;
+
+        public UserGateway(ILogger<IUserGateway> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task<Auth0User> GetUserData(string accessToken)
         {
             var domain = Environment.GetEnvironmentVariable("Auth0_Domain");
@@ -36,10 +43,14 @@ namespace timer_app.Gateways
 
         public async Task<string> AuthorizeUser(string code)
         {
+            _logger.LogInformation("Calling UserGateway.AuthorizeUser");
+
             var domain = Environment.GetEnvironmentVariable("Auth0_Domain");
             var clientId = Environment.GetEnvironmentVariable("Auth0_ClientId");
             var clientSecret = Environment.GetEnvironmentVariable("Auth0_ClientSecret");
             var redirect_uri = Environment.GetEnvironmentVariable("Auth0_RedirectUri");
+
+            _logger.LogInformation("Setting up request in UserGateway.AuthorizeUser");
 
             var client = new RestClient(domain);
             var request = new RestRequest("/oauth/token", Method.Post);
@@ -48,6 +59,8 @@ namespace timer_app.Gateways
             request.AddParameter("application/x-www-form-urlencoded", $"grant_type=authorization_code&client_id={clientId}&client_secret={clientSecret}&code={code}&redirect_uri={redirect_uri}", ParameterType.RequestBody);
 
             var response = await client.ExecuteAsync(request);
+
+            _logger.LogInformation("Response recieved in UserGateway.AuthorizeUser with {StatusCode}", response.StatusCode);
 
             // set cookie
             var responseData = JObject.Parse(response.Content);
