@@ -43,10 +43,10 @@ namespace timer_app.Gateways
 
         public async Task<string> AuthorizeUser(string code)
         {
-            var domain = _configuration.GetValue<string>("Auth0:Domain");
-            var clientId = _configuration.GetValue<string>("Auth0:ClientId");
-            var clientSecret = _configuration.GetValue<string>("Auth0:ClientSecret");
-            var redirect_uri = _configuration.GetValue<string>("Auth0:RedirectUri");
+            var domain = Environment.GetEnvironmentVariable("Auth0_Domain");
+            var clientId = Environment.GetEnvironmentVariable("Auth0_ClientId");
+            var clientSecret = Environment.GetEnvironmentVariable("Auth0_ClientSecret");
+            var redirect_uri = Environment.GetEnvironmentVariable("Auth0_RedirectUri");
 
             var client = new RestClient(domain);
             var request = new RestRequest("/oauth/token", Method.Post);

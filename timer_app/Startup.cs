@@ -56,9 +56,6 @@ public class Startup
 
     private void ConfigureJwtAuthentication(IServiceCollection services)
     {
-        var auth0Options = new Auth0Options();
-        Configuration.Bind("Auth0", auth0Options);
-
         var isTestEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test"
                           || Configuration["TestEnvironment"] == "True";
 
@@ -66,8 +63,8 @@ public class Startup
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                options.Authority = auth0Options.Domain;
-                options.Audience = auth0Options.Audience;
+                options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain");
+                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience");
             });
         }
     }
