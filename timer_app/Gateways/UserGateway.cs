@@ -62,6 +62,11 @@ namespace timer_app.Gateways
 
             _logger.LogInformation("Response recieved {Response} in UserGateway.AuthorizeUser with {StatusCode}", response.Content, response.StatusCode);
 
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException(response.ErrorMessage);
+            }
+
             // set cookie
             var responseData = JObject.Parse(response.Content);
 
