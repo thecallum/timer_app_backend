@@ -60,7 +60,7 @@ namespace timer_app.Gateways
 
             var response = await client.ExecuteAsync(request);
 
-            _logger.LogInformation("Response recieved in UserGateway.AuthorizeUser with {StatusCode}", response.StatusCode);
+            _logger.LogInformation("Response recieved {Response} in UserGateway.AuthorizeUser with {StatusCode}", response.Content, response.StatusCode);
 
             // set cookie
             var responseData = JObject.Parse(response.Content);
