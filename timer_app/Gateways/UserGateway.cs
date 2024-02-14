@@ -52,10 +52,11 @@ namespace timer_app.Gateways
 
             _logger.LogInformation("Setting up request in UserGateway.AuthorizeUser");
 
-            var options = new RestClientOptions { 
+            var options = new RestClientOptions
+            {
                 BaseUrl = new Uri(domain, UriKind.Relative),
                 ThrowOnAnyError = true,
-                
+
             };
 
             var client = new RestClient(options);
