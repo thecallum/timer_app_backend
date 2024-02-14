@@ -57,6 +57,7 @@ namespace timer_app.Gateways
                 BaseUrl = new Uri(domain, UriKind.Relative),
                 ThrowOnAnyError = true,
 
+
             };
 
             var client = new RestClient(options);
