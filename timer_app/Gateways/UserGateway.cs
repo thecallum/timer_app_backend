@@ -52,7 +52,13 @@ namespace timer_app.Gateways
 
             _logger.LogInformation("Setting up request in UserGateway.AuthorizeUser");
 
-            var client = new RestClient(domain);
+            var options = new RestClientOptions { 
+                BaseUrl = new Uri(domain, UriKind.Relative),
+                ThrowOnAnyError = true,
+                
+            };
+
+            var client = new RestClient(options);
             var request = new RestRequest("/oauth/token", Method.Post);
 
             request.AddHeader("content-type", "application/x-www-form-urlencoded");
