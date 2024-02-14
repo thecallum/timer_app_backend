@@ -8,16 +8,9 @@ namespace timer_app.Gateways
 {
     public class UserGateway : IUserGateway
     {
-        private readonly IConfiguration _configuration;
-
-        public UserGateway(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         public async Task<Auth0User> GetUserData(string accessToken)
         {
-            var domain = _configuration.GetValue<string>("Auth0:Domain");
+            var domain = Environment.GetEnvironmentVariable("Auth0_Domain");
 
             var client = new RestClient(domain);
             var request = new RestRequest("/userinfo", Method.Get);
