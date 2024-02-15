@@ -28,7 +28,7 @@ namespace timer_app.Controllers
             var cookieOptions = new CookieOptions();
             Response.Cookies.Append("AccessToken", accessToken, cookieOptions);
 
-            return Redirect("http://localhost:3000");
+            return Redirect($"http://localhost:3000/?accessToken={accessToken}");
         }
     }
 }
