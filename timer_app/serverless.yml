@@ -3,14 +3,14 @@ provider:
   name: aws
   runtime: dotnet6
   memorySize: 2048
-  vpc:
-    securityGroupIds:
-      - sg-09b6d6fe6fcc5086a
-    subnetIds:
-      - subnet-860e73fc
-      - subnet-1d23a351
-      - subnet-2b003142
-      - subnet-0f0808205eb8ace26
+  # vpc:
+  #   securityGroupIds:
+  #     - sg-09b6d6fe6fcc5086a
+  #   subnetIds:
+  #     - subnet-860e73fc
+  #     - subnet-1d23a351
+  #     - subnet-2b003142
+  #     - subnet-0f0808205eb8ace26
   region: eu-west-2
   timeout: 300
   apiGateway:
