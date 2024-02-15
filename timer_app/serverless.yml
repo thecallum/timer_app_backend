@@ -22,7 +22,6 @@ package:
   artifact: ./bin/release/net6.0/timer_app.zip
 
 functions:
-
   TimerAppApi:
     name: timer-app-api-${self:provider.stage}
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
@@ -37,4 +36,4 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
-          private: true
+          private: false
