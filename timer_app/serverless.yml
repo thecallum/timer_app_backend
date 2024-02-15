@@ -13,9 +13,9 @@ provider:
   #     - subnet-0f0808205eb8ace26
   region: eu-west-2
   timeout: 300
-  apiGateway:
-    apiKeys:
-        - api-key-${self:service}-${self:provider.stage}
+  # apiGateway:
+  #   apiKeys:
+  #       - api-key-${self:service}-${self:provider.stage}
   stage: ${opt:stage}
 
 package:
