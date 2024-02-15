@@ -18,7 +18,8 @@ namespace timer_app.Controllers
         public async Task<IActionResult> Authorize([FromQuery] string code)
         {
             var accessToken = await _userGateway.AuthorizeUser(code);
-            if (accessToken == null) {
+            if (accessToken == null)
+            {
                 // unauthorized
                 // return Unauthorized();
                 return Redirect("http://localhost:3000");
