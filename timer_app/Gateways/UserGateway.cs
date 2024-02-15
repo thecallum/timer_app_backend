@@ -54,10 +54,8 @@ namespace timer_app.Gateways
 
             var options = new RestClientOptions
             {
-                BaseUrl = new Uri(domain, UriKind.Relative),
-                ThrowOnAnyError = true,
-
-
+                BaseUrl = new Uri(domain),
+                ThrowOnAnyError = true
             };
 
             var client = new RestClient(options);
