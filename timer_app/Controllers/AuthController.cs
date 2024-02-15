@@ -27,10 +27,12 @@ namespace timer_app.Controllers
                     return Redirect("http://localhost:3000");
                 }
 
-                var cookieOptions = new CookieOptions();
-                Response.Cookies.Append("AccessToken", accessToken, cookieOptions);
+                // var cookieOptions = new CookieOptions();
+                // Response.Cookies.Append("AccessToken", accessToken, cookieOptions);
 
-                return Redirect($"http://localhost:3000/?accessToken={accessToken}");
+                var redirectUrl = $"http://localhost:3000/api/authorize?accessToken={accessToken}";
+
+                return Redirect(redirectUrl);
             }
             catch (Exception e)
             {
