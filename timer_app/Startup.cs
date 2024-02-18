@@ -70,6 +70,8 @@ public class Startup
             {
                 options.Authority = auth0Options.Domain;
                 options.Audience = auth0Options.Audience;
+                options.IncludeErrorDetails = true;
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
