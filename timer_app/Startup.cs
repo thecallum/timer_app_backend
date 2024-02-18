@@ -68,9 +68,14 @@ public class Startup
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                options.Authority = auth0Options.Domain;
-                options.Audience = auth0Options.Audience;
+                //options.Authority = auth0Options.Domain;
+                //options.Audience = auth0Options.Audience;
+
+                options.Authority = Environment.GetEnvironmentVariable("Auth0__Domain");
+                options.Audience = Environment.GetEnvironmentVariable("Auth0__Audience");
+
                 options.IncludeErrorDetails = true;
+                //options.
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -78,7 +83,8 @@ public class Startup
                    // ValidateAudience = true,
                     ValidateLifetime = true,
                   //  ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,
+                    
                 };
             });
         }
