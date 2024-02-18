@@ -1,6 +1,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
 using timer_app.Gateway;
@@ -68,6 +70,14 @@ public class Startup
             {
                 options.Authority = auth0Options.Domain;
                 options.Audience = auth0Options.Audience;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero
+                };
             });
         }
     }
