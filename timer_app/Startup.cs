@@ -58,8 +58,8 @@ public class Startup
 
     private void ConfigureJwtAuthentication(IServiceCollection services)
     {
-        var auth0Options = new Auth0Options();
-        Configuration.Bind("Auth0", auth0Options);
+        // var auth0Options = new Auth0Options();
+        // Configuration.Bind("Auth0", auth0Options);
 
         var isTestEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test"
                           || Configuration["TestEnvironment"] == "True";
