@@ -2,7 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
 using timer_app.Gateway;
@@ -19,14 +18,12 @@ namespace timer_app;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration, IWebHostEnvironment env)
+    public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
-        _env = env;
     }
 
     public IConfiguration Configuration { get; }
-    private readonly IWebHostEnvironment _env;
 
     // This method gets called by the runtime. Use this method to add services to the container
     public void ConfigureServices(IServiceCollection services)
@@ -65,8 +62,9 @@ public class Startup
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                options.Authority = auth0Options.Domain;
-                options.Audience = auth0Options.Audience;
+                options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain");
+                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience");
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
