@@ -71,8 +71,8 @@ public class Startup
                 //options.Authority = auth0Options.Domain;
                 //options.Audience = auth0Options.Audience;
 
-                options.Authority = Environment.GetEnvironmentVariable("Auth0__Domain");
-                options.Audience = Environment.GetEnvironmentVariable("Auth0__Audience");
+                options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain");
+                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience");
 
                 options.IncludeErrorDetails = true;
                 //options.

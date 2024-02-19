@@ -27,11 +27,8 @@ functions:
     handler: timer_app::timer_app.LambdaEntryPoint::FunctionHandlerAsync
     environment:
       CONNECTION_STRING: Host=${ssm:/timer-app/${self:provider.stage}/db-hostname};Port=${ssm:/timer-app/${self:provider.stage}/db-port};Database=${self:provider.stage};Username=${ssm:/timer-app/${self:provider.stage}/db-username};Password=${ssm:/timer-app/${self:provider.stage}/db-password}
-      Auth0__Domain: ${ssm:/timer-app/${self:provider.stage}/auth0-domain}
-      Auth0__ClientId: ${ssm:/timer-app/${self:provider.stage}/auth0-clientid}
-      Auth0__ClientSecret: ${ssm:/timer-app/${self:provider.stage}/auth0-clientsecret}
-      Auth0__Audience: ${ssm:/timer-app/${self:provider.stage}/auth0-audience}
-      Auth0__RedirectUri: ${ssm:/timer-app/${self:provider.stage}/auth0-redirecturi}
+      Auth0_Domain: ${ssm:/timer-app/${self:provider.stage}/auth0-domain}
+      Auth0_Audience: ${ssm:/timer-app/${self:provider.stage}/auth0-audience}
     events:
       - http:
           path: /{proxy+}
