@@ -8,23 +8,35 @@ namespace timer_app.Gateways
 {
     public class UserGateway : IUserGateway
     {
-        private readonly IConfiguration _configuration;
+        private readonly ILogger<IUserGateway> _logger;
 
-        public UserGateway(IConfiguration configuration)
+        public UserGateway(ILogger<IUserGateway> logger)
         {
-            _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<Auth0User> GetUserData(string accessToken)
         {
-            var domain = _configuration.GetValue<string>("Auth0:Domain");
+            _logger.LogInformation("UserGateway about to fetch user data");
 
-            var client = new RestClient(domain);
+            var domain = Environment.GetEnvironmentVariable("Auth0_Domain");
+
+            var options = new RestClientOptions
+            {
+                BaseUrl = new Uri(domain),
+                ThrowOnAnyError = true
+            };
+
+            var client = new RestClient(options);
             var request = new RestRequest("/userinfo", Method.Get);
 
             request.AddHeader("Authorization", accessToken);
 
+            _logger.LogInformation("UserGateway is now fetching user data");
+
             var response = await client.ExecuteAsync(request);
+
+            _logger.LogInformation("UserGateway fetched user data with {Response} {Status}", response.Content, response.StatusCode);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -39,29 +51,6 @@ namespace timer_app.Gateways
                 Name = responseData["name"].ToString(),
                 Email = responseData["email"].ToString(),
             };
-        }
-
-        public async Task<string> AuthorizeUser(string code)
-        {
-            var domain = _configuration.GetValue<string>("Auth0:Domain");
-            var clientId = _configuration.GetValue<string>("Auth0:ClientId");
-            var clientSecret = _configuration.GetValue<string>("Auth0:ClientSecret");
-            var redirect_uri = _configuration.GetValue<string>("Auth0:RedirectUri");
-
-            var client = new RestClient(domain);
-            var request = new RestRequest("/oauth/token", Method.Post);
-
-            request.AddHeader("content-type", "application/x-www-form-urlencoded");
-            request.AddParameter("application/x-www-form-urlencoded", $"grant_type=authorization_code&client_id={clientId}&client_secret={clientSecret}&code={code}&redirect_uri={redirect_uri}", ParameterType.RequestBody);
-
-            var response = await client.ExecuteAsync(request);
-
-            // set cookie
-            var responseData = JObject.Parse(response.Content);
-
-            var accessToken = responseData["access_token"].ToString();
-
-            return accessToken;
         }
     }
 }
