@@ -8,6 +8,7 @@ using System.Text;
 using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
 using timer_app.Infrastructure;
+using timer_app.Middleware;
 
 namespace timer_app_tests.E2ETests
 {
@@ -15,7 +16,8 @@ namespace timer_app_tests.E2ETests
     public class GetAllEventsE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
-        private readonly string AccessToken = GenerateToken();
+        private readonly string AccessToken = GenerateAccessToken();
+        private readonly string IdToken = GenerateIdToken();
 
         [TearDown]
         public void TearDown()
@@ -62,6 +64,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             // Act
             var response = await Client.SendAsync(requestMessage);
@@ -81,6 +84,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             // Act
             var response = await Client.SendAsync(requestMessage);
@@ -130,6 +134,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             var request = new GetAllEventsRequest
             {

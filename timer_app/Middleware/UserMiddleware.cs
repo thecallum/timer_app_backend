@@ -1,8 +1,16 @@
-﻿using System.Reflection.PortableExecutable;
+﻿using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Reflection.PortableExecutable;
 using timer_app.Middleware.Interfaces;
+using System.Security.Claims;
 
 namespace timer_app.Middleware
 {
+
     public class UserMiddleware
     {
         private readonly RequestDelegate _next;
@@ -14,16 +22,34 @@ namespace timer_app.Middleware
             _logger = logger;
         }
 
-        public async Task Invoke(HttpContext httpContext, IUserService userService)
+        public async Task Invoke(HttpContext httpContext, IUserService userService, ITokenValidator tokenValidator)
         {
             _logger.LogInformation("Invoking UserMiddlware");
 
-            var accessToken = httpContext.Request.Headers["Authorization"].ToString();
+            var idToken = httpContext.Request.Headers[HeaderConfig.IdToken].ToString();
 
-            await userService.InitialiseUser(accessToken);
-            httpContext.User = userService.GetUser();
+            if (string.IsNullOrEmpty(idToken))
+            {
+                httpContext.Response.StatusCode = 403;
+                await httpContext.Response.WriteAsync($"Invalid {HeaderConfig.IdToken}");
+                return;
+            }
 
-            await _next(httpContext);
+            try
+            {
+                var principal = await tokenValidator.ValidateIdToken(idToken);
+
+                await userService.InitialiseUser(principal);
+                httpContext.User = userService.GetUser();
+
+                await _next(httpContext);
+            }
+            catch (Exception)
+            {
+                httpContext.Response.StatusCode = 403;
+                await httpContext.Response.WriteAsync($"Invalid {HeaderConfig.IdToken}");
+                return;
+            }
         }
     }
 }

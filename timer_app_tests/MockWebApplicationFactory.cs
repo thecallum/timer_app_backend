@@ -7,15 +7,44 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using timer_app;
 using timer_app.Domain;
-using timer_app.Gateways;
-using timer_app.Gateways.Interfaces;
 using timer_app.Infrastructure;
+using timer_app.Middleware;
 
 namespace timer_app_tests
 {
+
+    public class MockTokenValidator : ITokenValidator
+    {
+        private readonly Auth0User _userData;
+
+        public MockTokenValidator(Auth0User userData)
+        {
+            _userData = userData;
+        }
+
+        public async Task<ClaimsPrincipal> ValidateIdToken(string idToken)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, _userData.Id)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims);
+
+            // Create a ClaimsPrincipal using the ClaimsIdentity
+            var principal = new ClaimsPrincipal(claimsIdentity);
+
+            return principal;
+        }
+    }
+
+
+
     public class MockWebApplicationFactory : WebApplicationFactory<Startup>
     {
         protected readonly Fixture _fixture = new Fixture();
@@ -51,7 +80,7 @@ namespace timer_app_tests
             {
                 ConfigureDbContext(services, configuration);
                 ConfigureAuthentication(services);
-                ConfigureMockUserGateway(services);
+                ConfigureMockTokenValidator(services);
             })
             .UseEnvironment("IntegrationTests");
         }
@@ -93,10 +122,10 @@ namespace timer_app_tests
             });
         }
 
-        private void ConfigureMockUserGateway(IServiceCollection services)
+        private void ConfigureMockTokenValidator(IServiceCollection services)
         {
-            services.RemoveAll<UserGateway>();
-            services.AddTransient<IUserGateway>(x => new MockUserGateway(UserData));
+            services.RemoveAll<ITokenValidator>();
+            services.AddTransient<ITokenValidator>(x => new MockTokenValidator(UserData));
         }
 
         protected void CleanupDb()
@@ -116,12 +145,17 @@ namespace timer_app_tests
             return scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
         }
 
-        protected static string GenerateToken()
+        protected static string GenerateAccessToken()
         {
             var expiry = DateTime.UtcNow.AddHours(1);
-            var claims = new Dictionary<string, string>();
+            // var claims = new Dictionary<string, string>();
 
-            return TokenHelper.GenerateToken(TokenIssuer, TokenAudience, expiry, claims, TokenKey);
+            return TokenHelper.GenerateAccessToken(TokenIssuer, TokenAudience, expiry, TokenKey);
+        }
+
+        protected static string GenerateIdToken()
+        {
+            return "ID_TOKEN_VALUE";
         }
     }
 }
