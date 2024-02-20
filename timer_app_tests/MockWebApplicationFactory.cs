@@ -155,10 +155,7 @@ namespace timer_app_tests
 
         protected static string GenerateIdToken()
         {
-            var expiry = DateTime.UtcNow.AddHours(1);
-            var claims = new Dictionary<string, object>();
-
-            return TokenHelper.GenerateIdToken(TokenIssuer, TokenAudience, expiry, claims, TokenKey);
+            return "ID_TOKEN_VALUE"
         }
     }
 }
