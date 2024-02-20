@@ -37,6 +37,7 @@ public class Startup
         services.AddTransient<IProjectGateway, ProjectGateway>();
 
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ITokenValidator, TokenValidator>();
 
         services.AddTransient<ICreateEventUseCase, CreateEventUseCase>();
         services.AddTransient<ICreateProjectUseCase, CreateProjectUseCase>();

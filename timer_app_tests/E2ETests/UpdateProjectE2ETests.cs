@@ -8,6 +8,7 @@ using timer_app.Boundary.Request;
 using timer_app.Boundary.Response;
 using timer_app.Factories;
 using timer_app.Infrastructure;
+using timer_app.Middleware;
 
 namespace timer_app_tests.E2ETests
 {
@@ -16,6 +17,7 @@ namespace timer_app_tests.E2ETests
     {
         public HttpClient Client => CreateClient();
         private readonly string AccessToken = GenerateAccessToken();
+        private readonly string IdToken = GenerateIdToken();
 
         [TearDown]
         public void TearDown()
@@ -56,6 +58,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             var request = new UpdateProjectRequest
             {
@@ -89,6 +92,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             var request = new UpdateProjectRequest
             {
@@ -133,6 +137,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             var request = new UpdateProjectRequest
             {
@@ -176,6 +181,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             var request = new UpdateProjectRequest
             {
@@ -219,6 +225,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             var request = new UpdateProjectRequest
             {

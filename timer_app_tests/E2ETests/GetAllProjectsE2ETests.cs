@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using timer_app.Boundary.Response;
 using timer_app.Infrastructure;
+using timer_app.Middleware;
 
 namespace timer_app_tests.E2ETests
 {
@@ -13,6 +14,7 @@ namespace timer_app_tests.E2ETests
     {
         public HttpClient Client => CreateClient();
         private readonly string AccessToken = GenerateAccessToken();
+        private readonly string IdToken = GenerateIdToken();
 
         private HttpRequestMessage _requestMessage;
 
@@ -23,6 +25,7 @@ namespace timer_app_tests.E2ETests
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
 
             _requestMessage = requestMessage;
         }
