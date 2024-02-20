@@ -46,7 +46,7 @@ namespace timer_app.Middleware
             }
             catch (Exception)
             {
-                httpContext.Response.StatusCode = 403; 
+                httpContext.Response.StatusCode = 403;
                 await httpContext.Response.WriteAsync($"Invalid {HeaderConfig.IdToken}");
                 return;
             }
