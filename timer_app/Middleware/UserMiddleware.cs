@@ -1,8 +1,16 @@
-﻿using System.Reflection.PortableExecutable;
+﻿using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Reflection.PortableExecutable;
 using timer_app.Middleware.Interfaces;
+using System.Security.Claims;
 
 namespace timer_app.Middleware
 {
+
     public class UserMiddleware
     {
         private readonly RequestDelegate _next;
@@ -18,12 +26,64 @@ namespace timer_app.Middleware
         {
             _logger.LogInformation("Invoking UserMiddlware");
 
-            var accessToken = httpContext.Request.Headers["Authorization"].ToString();
+            var idToken = httpContext.Request.Headers[HeaderConfig.IdToken].ToString();
 
-            await userService.InitialiseUser(accessToken);
-            httpContext.User = userService.GetUser();
+            if (string.IsNullOrEmpty(idToken))
+            {
+                httpContext.Response.StatusCode = 403;
+                await httpContext.Response.WriteAsync($"Invalid {HeaderConfig.IdToken}");
+                return;
+            }
 
-            await _next(httpContext);
+            try
+            {
+                var principal = await ValidateIdToken(idToken);
+
+                await userService.InitialiseUser(principal);
+                httpContext.User = userService.GetUser();
+
+                await _next(httpContext);
+            }
+            catch (Exception)
+            {
+                httpContext.Response.StatusCode = 403; 
+                await httpContext.Response.WriteAsync($"Invalid {HeaderConfig.IdToken}");
+                return;
+            }
+        }
+
+        private static async Task<ClaimsPrincipal> ValidateIdToken(string idToken)
+        {
+            var issuer = Environment.GetEnvironmentVariable("Auth0_Domain");
+            var audience = Environment.GetEnvironmentVariable("Auth0_AppAudience");
+
+            // Ensure issuer ends with a slash
+            if (!issuer.EndsWith("/")) issuer += "/";
+
+            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+           $"{issuer}.well-known/openid-configuration",
+           new OpenIdConnectConfigurationRetriever(),
+           new HttpDocumentRetriever());
+
+            var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+
+            // Validate the token
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateAudience = true,
+                ValidAudience = audience,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKeys = openIdConfig.SigningKeys,
+
+                ClockSkew = TimeSpan.Zero
+            };
+
+            var handler = new JwtSecurityTokenHandler();
+            var principal = handler.ValidateToken(idToken, validationParameters, out var validatedToken);
+            return principal;
         }
     }
 }

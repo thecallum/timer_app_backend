@@ -12,7 +12,7 @@ namespace timer_app_tests.E2ETests
     public class GetAllProjectsE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
-        private readonly string AccessToken = GenerateToken();
+        private readonly string AccessToken = GenerateAccessToken();
 
         private HttpRequestMessage _requestMessage;
 

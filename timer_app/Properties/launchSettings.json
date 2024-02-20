@@ -7,7 +7,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "__CONNECTION_STRING": "Host=127.0.0.1:5432;Database=sampledb;Username=postgres;Password=mypassword",
         "TEST": "Callum",
-        "LOCAL_ENV": "true"
+        "LOCAL_ENV": "true",
+        "Auth0_Domain": "https://dev-ig3jfdtaxdzredhy.uk.auth0.com/",
+        "Auth0_ApiAudience": "https://localhost:50086/",
+        "Auth0_AppAudience": "yQP3EasryNsyRe4cSATgPV6sRkLUaEcs"
       },
       "applicationUrl": "https://localhost:50086;http://localhost:50087"
     },

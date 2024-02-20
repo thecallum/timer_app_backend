@@ -6,8 +6,6 @@ using timer_app.Boundary.Request;
 using timer_app.Boundary.Request.Validation;
 using timer_app.Gateway;
 using timer_app.Gateway.Interfaces;
-using timer_app.Gateways;
-using timer_app.Gateways.Interfaces;
 using timer_app.Infrastructure;
 using timer_app.Middleware;
 using timer_app.Middleware.Interfaces;
@@ -37,7 +35,6 @@ public class Startup
 
         services.AddTransient<ICalendarEventsGateway, CalendarEventsGateway>();
         services.AddTransient<IProjectGateway, ProjectGateway>();
-        services.AddTransient<IUserGateway, UserGateway>();
 
         services.AddScoped<IUserService, UserService>();
 
@@ -63,7 +60,7 @@ public class Startup
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain");
-                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience");
+                options.Audience = Environment.GetEnvironmentVariable("Auth0_ApiAudience");
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

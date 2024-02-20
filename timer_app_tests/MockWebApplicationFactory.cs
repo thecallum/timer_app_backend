@@ -10,8 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using timer_app;
 using timer_app.Domain;
-using timer_app.Gateways;
-using timer_app.Gateways.Interfaces;
 using timer_app.Infrastructure;
 
 namespace timer_app_tests
@@ -95,8 +93,8 @@ namespace timer_app_tests
 
         private void ConfigureMockUserGateway(IServiceCollection services)
         {
-            services.RemoveAll<UserGateway>();
-            services.AddTransient<IUserGateway>(x => new MockUserGateway(UserData));
+            //services.RemoveAll<UserGateway>();
+            //services.AddTransient<IUserGateway>(x => new MockUserGateway(UserData));
         }
 
         protected void CleanupDb()
@@ -116,12 +114,20 @@ namespace timer_app_tests
             return scope.ServiceProvider.GetRequiredService<TimerAppDbContext>();
         }
 
-        protected static string GenerateToken()
+        protected static string GenerateAccessToken()
         {
             var expiry = DateTime.UtcNow.AddHours(1);
-            var claims = new Dictionary<string, string>();
+            // var claims = new Dictionary<string, string>();
 
-            return TokenHelper.GenerateToken(TokenIssuer, TokenAudience, expiry, claims, TokenKey);
+            return TokenHelper.GenerateAccessToken(TokenIssuer, TokenAudience, expiry, TokenKey);
+        }
+
+        protected static string GenerateIdToken()
+        {
+            var expiry = DateTime.UtcNow.AddHours(1);
+            var claims = new Dictionary<string, object>();
+
+            return TokenHelper.GenerateIdToken(TokenIssuer, TokenAudience, expiry, claims, TokenKey);
         }
     }
 }
