@@ -155,7 +155,7 @@ namespace timer_app_tests
 
         protected static string GenerateIdToken()
         {
-            return "ID_TOKEN_VALUE"
+            return "ID_TOKEN_VALUE";
         }
     }
 }
