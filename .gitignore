@@ -367,6 +367,5 @@ dotnet-ef-local/
 
 appsettings.json
 appsettings.Development.json
-appsettings.IntegrationTests.json
 
 launchsettings.json
