@@ -61,7 +61,7 @@ public class Startup
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain");
-                options.Audience = Environment.GetEnvironmentVariable("Auth0_ApiAudience");
+                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience_AccessToken");
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
