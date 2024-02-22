@@ -24,8 +24,6 @@ namespace timer_app.Middleware
 
             var userId = claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
 
-            ClaimTypes.
-
             return userId;
         }
     }
