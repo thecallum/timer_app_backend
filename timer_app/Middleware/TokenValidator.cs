@@ -12,7 +12,7 @@ namespace timer_app.Middleware
         public async Task<ClaimsPrincipal> ValidateIdToken(string idToken)
         {
             var issuer = Environment.GetEnvironmentVariable("Auth0_Domain");
-            var audience = Environment.GetEnvironmentVariable("Auth0_AppAudience");
+            var audience = Environment.GetEnvironmentVariable("Auth0_Audience_IdToken");
 
             // Ensure issuer ends with a slash
             if (!issuer.EndsWith("/")) issuer += "/";

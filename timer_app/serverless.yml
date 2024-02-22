@@ -27,8 +27,8 @@ functions:
     environment:
       CONNECTION_STRING: Host=${ssm:/timer-app/${self:provider.stage}/db-hostname};Port=${ssm:/timer-app/${self:provider.stage}/db-port};Database=${self:provider.stage};Username=${ssm:/timer-app/${self:provider.stage}/db-username};Password=${ssm:/timer-app/${self:provider.stage}/db-password}
       Auth0_Domain: ${ssm:/timer-app/${self:provider.stage}/auth0-domain}
-      Auth0_ApiAudience: ${ssm:/timer-app/${self:provider.stage}/auth0-api-audience}
-      Auth0_AppAudience: ${ssm:/timer-app/${self:provider.stage}/auth0-app-audience}
+      Auth0_Audience_AccessToken: ${ssm:/timer-app/${self:provider.stage}/auth0-audience-accessToken}
+      Auth0_Audience_IdToken: ${ssm:/timer-app/${self:provider.stage}/auth0-audience-idToken}
     events:
       - http:
           path: /{proxy+}
