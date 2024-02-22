@@ -8,9 +8,6 @@ using timer_app.Infrastructure.Exceptions;
 
 namespace timer_app.Gateway
 {
-
-
-
     public class ProjectGateway : IProjectGateway
     {
         private readonly TimerAppDbContext _context;
@@ -20,7 +17,7 @@ namespace timer_app.Gateway
             _context = context;
         }
 
-        public async Task<IEnumerable<ProjectWithCount>> GetAllProjects(int userId)
+        public async Task<IEnumerable<ProjectWithCount>> GetAllProjects(string userId)
         {
             var projects = await _context.Projects
                 .Where(x => x.UserId == userId)
@@ -38,7 +35,7 @@ namespace timer_app.Gateway
             return projects;
         }
 
-        public async Task<Project> CreateProject(CreateProjectRequest request, int userId)
+        public async Task<Project> CreateProject(CreateProjectRequest request, string userId)
         {
             var project = request.ToDb(userId);
 
@@ -48,7 +45,7 @@ namespace timer_app.Gateway
             return project;
         }
 
-        public async Task<Project> UpdateProject(int projectId, UpdateProjectRequest request, int userId)
+        public async Task<Project> UpdateProject(int projectId, UpdateProjectRequest request, string userId)
         {
             var existingProject = await _context.Projects.FindAsync(projectId);
             if (existingProject == null) return null;
@@ -81,7 +78,7 @@ namespace timer_app.Gateway
             return existingProject;
         }
 
-        public async Task<bool> DeleteProject(int projectId, int userId)
+        public async Task<bool> DeleteProject(int projectId, string userId)
         {
             var project = await _context.Projects.FindAsync(projectId);
             if (project == null) return false;

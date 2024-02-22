@@ -16,7 +16,7 @@ namespace timer_app.UseCases
             _gateway = gateway;
         }
 
-        public async Task<CalendarEventResponse> ExecuteAsync(CreateEventRequest request, int userId)
+        public async Task<CalendarEventResponse> ExecuteAsync(CreateEventRequest request, string userId)
         {
             var createdCalendarEvent = await _gateway.CreateEvent(request, userId);
 

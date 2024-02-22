@@ -1,7 +1,12 @@
 ﻿using AutoFixture;
 using FluentAssertions;
+using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using timer_app.Boundary.Request;
 using timer_app.Infrastructure;
+using timer_app.Middleware;
 
 namespace timer_app_tests.E2ETests
 {
@@ -9,13 +14,31 @@ namespace timer_app_tests.E2ETests
     public class DeleteEventE2ETests : MockWebApplicationFactory
     {
         public HttpClient Client => CreateClient();
-
-        private readonly Fixture _fixture = new Fixture();
+        private readonly string AccessToken = GenerateAccessToken();
+        private readonly string IdToken = GenerateIdToken();
 
         [TearDown]
         public void TearDown()
         {
             CleanupDb();
+        }
+
+        [Test]
+        public async Task DeleteEvent_WhenInvalidToken_ReturnsUnauthorized()
+        {
+            // Arrange
+            var eventId = _fixture.Create<int>();
+
+            var url = new Uri($"/api/events/{eventId}", UriKind.Relative);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "INVALID_TOKEN");
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Test]
@@ -26,18 +49,22 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events/{eventId}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Test]
-        public async Task DeleteEvent_WhenUnauthorized_Returns401()
+        public async Task DeleteEvent_WhenEventNotOwnedByUser_Returns401()
         {
             // Arrange
-            var otherUserId = 2;
+            var otherUserId = _fixture.Create<string>();
 
             var calendarEvent = _fixture.Build<CalendarEvent>()
                .Without(x => x.Project)
@@ -53,8 +80,12 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events/{calendarEvent.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -64,12 +95,10 @@ namespace timer_app_tests.E2ETests
         public async Task DeleteEvent_WhenSuccessful_Returns201()
         {
             // Arrange
-            var userId = 1;
-
             var calendarEvent = _fixture.Build<CalendarEvent>()
                .Without(x => x.Project)
                .Without(x => x.ProjectId)
-               .With(x => x.UserId, userId)
+               .With(x => x.UserId, UserData.Id)
                .Create();
 
             using (var dbContext = CreateDbContext())
@@ -80,8 +109,12 @@ namespace timer_app_tests.E2ETests
 
             var url = new Uri($"/api/events/{calendarEvent.Id}", UriKind.Relative);
 
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            requestMessage.Headers.Add(HeaderConfig.IdToken, IdToken);
+
             // Act
-            var response = await Client.DeleteAsync(url);
+            var response = await Client.SendAsync(requestMessage);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);

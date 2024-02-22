@@ -2,9 +2,9 @@
 {
     public class UserUnauthorizedToAccessEventException : Exception
     {
-        public readonly int UserId;
+        public readonly string UserId;
 
-        public UserUnauthorizedToAccessEventException(int userId) : base($"User {userId} is not authorized to access the requested entity.")
+        public UserUnauthorizedToAccessEventException(string userId) : base($"User {userId} is not authorized to access the requested entity.")
         {
             UserId = userId;
         }

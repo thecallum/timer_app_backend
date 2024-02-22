@@ -1,14 +1,18 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using timer_app.Boundary.Request;
 using timer_app.Infrastructure.Exceptions;
+using timer_app.Middleware.Interfaces;
 using timer_app.UseCases.Interfaces;
 
 namespace timer_app.Controllers
 {
     [Route("api/projects")]
     [ApiController]
+    [Authorize]
     public class ProjectsController : ControllerBase
     {
         private readonly IGetAllProjectsUseCase _getAllProjectsUseCase;
@@ -19,7 +23,7 @@ namespace timer_app.Controllers
         private readonly IValidator<CreateProjectRequest> _createProjectRequestValidator;
         private readonly IValidator<UpdateProjectRequest> _updateProjectRequestValidator;
 
-        private const int PlaceholderUserId = 1;
+        private readonly IUserService _currentUserService;
 
         public ProjectsController(
             IGetAllProjectsUseCase getAllProjectsUseCase,
@@ -27,7 +31,8 @@ namespace timer_app.Controllers
             IDeleteProjectUseCase deleteProjectUseCase,
             ICreateProjectUseCase createProjectUseCase,
             IValidator<CreateProjectRequest> createProjectRequestValidator,
-            IValidator<UpdateProjectRequest> updateProjectRequestValidator)
+            IValidator<UpdateProjectRequest> updateProjectRequestValidator,
+            IUserService currentUserService)
         {
             _getAllProjectsUseCase = getAllProjectsUseCase;
             _updateProjectUseCase = updateProjectUseCase;
@@ -35,6 +40,7 @@ namespace timer_app.Controllers
             _createProjectUseCase = createProjectUseCase;
             _createProjectRequestValidator = createProjectRequestValidator;
             _updateProjectRequestValidator = updateProjectRequestValidator;
+            _currentUserService = currentUserService;
         }
 
         [HttpPost]
@@ -47,7 +53,9 @@ namespace timer_app.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var response = await _createProjectUseCase.ExecuteAsync(request, PlaceholderUserId);
+            var userId = _currentUserService.GetId();
+
+            var response = await _createProjectUseCase.ExecuteAsync(request, userId);
 
             return Ok(response);
         }
@@ -56,9 +64,11 @@ namespace timer_app.Controllers
         [Route("{projectId}")]
         public async Task<IActionResult> DeleteProject([FromRoute] ProjectQuery query)
         {
+            var userId = _currentUserService.GetId();
+
             try
             {
-                var response = await _deleteProjectUseCase.ExecuteAsync(query.ProjectId, PlaceholderUserId);
+                var response = await _deleteProjectUseCase.ExecuteAsync(query.ProjectId, userId);
                 if (!response) return NotFound(query.ProjectId);
 
                 return NoContent();
@@ -84,9 +94,11 @@ namespace timer_app.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
+            var userId = _currentUserService.GetId();
+
             try
             {
-                var response = await _updateProjectUseCase.ExecuteAsync(query.ProjectId, request, PlaceholderUserId);
+                var response = await _updateProjectUseCase.ExecuteAsync(query.ProjectId, request, userId);
                 if (response == null) return NotFound(query.ProjectId);
 
                 return Ok(response);
@@ -104,7 +116,9 @@ namespace timer_app.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProjects()
         {
-            var projects = await _getAllProjectsUseCase.ExecuteAsync(PlaceholderUserId);
+            var userId = _currentUserService.GetId();
+
+            var projects = await _getAllProjectsUseCase.ExecuteAsync(userId);
 
             return Ok(projects);
         }

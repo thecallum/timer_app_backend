@@ -15,7 +15,7 @@ namespace timer_app.UseCases
             _gateway = gateway;
         }
 
-        public async Task<CalendarEventResponse> ExecuteAsync(int calendarEventId, UpdateEventRequest request, int userId)
+        public async Task<CalendarEventResponse> ExecuteAsync(int calendarEventId, UpdateEventRequest request, string userId)
         {
             var updatedEvent = await _gateway.UpdateEvent(calendarEventId, request, userId);
 

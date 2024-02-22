@@ -12,7 +12,7 @@ namespace timer_app.UseCases
             _gateway = gateway;
         }
 
-        public async Task<bool> ExecuteAsync(int calendarEventId, int userId)
+        public async Task<bool> ExecuteAsync(int calendarEventId, string userId)
         {
             return await _gateway.DeleteEvent(calendarEventId, userId);
         }

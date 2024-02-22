@@ -12,7 +12,7 @@ namespace timer_app.UseCases
             _gateway = gateway;
         }
 
-        public async Task<bool> ExecuteAsync(int projectId, int userId)
+        public async Task<bool> ExecuteAsync(int projectId, string userId)
         {
             return await _gateway.DeleteProject(projectId, userId);
         }

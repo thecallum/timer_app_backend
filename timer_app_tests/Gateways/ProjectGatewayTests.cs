@@ -32,8 +32,8 @@ namespace timer_app_tests.GatewayTests
         public async Task GetAllProjects_WhenCalled_ReturnsAllProjectsAssignedToUser()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
-            var otherUserId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
+            var otherUserId = _fixture.Create<string>();
 
             var numberOfProjects = _randm.Next(2, 10);
             var projects = _fixture.Build<Project>()
@@ -61,7 +61,7 @@ namespace timer_app_tests.GatewayTests
         public async Task GetAllProjects_WhenCalled_CalculatesDuration()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -106,8 +106,8 @@ namespace timer_app_tests.GatewayTests
         public async Task GetAllProjects_WhenNoProjectsFound_ReturnsEmptyList()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
-            var otherUserId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
+            var otherUserId = _fixture.Create<string>();
 
             var numberOfProjects = _randm.Next(2, 10);
 
@@ -130,7 +130,7 @@ namespace timer_app_tests.GatewayTests
         public async Task CreateProject_WhenCalled_CreatesProject()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var request = _fixture.Create<CreateProjectRequest>();
 
             // Act
@@ -151,7 +151,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateProject_WhenProjectNotFound_ReturnsFalse()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var projectId = _fixture.Create<int>();
             var request = _fixture.Create<UpdateProjectRequest>();
 
@@ -166,7 +166,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateProject_WhenUserDoesntOwnProject_ThrowsUnauthorizedException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var otherUserId = userId + 1;
 
             var project = _fixture.Build<Project>()
@@ -190,7 +190,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateProject_WhenProjectIsArchived_ThrowsArchivedException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
                 .With(x => x.IsActive, false)
@@ -212,7 +212,7 @@ namespace timer_app_tests.GatewayTests
         public async Task UpdateProject_WhenCalled_UpdatesProject()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)
@@ -244,7 +244,7 @@ namespace timer_app_tests.GatewayTests
         public async Task Delete_WhenProjectNotFound_ReturnsFalse()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var projectId = _fixture.Create<int>();
 
             // Act
@@ -258,7 +258,7 @@ namespace timer_app_tests.GatewayTests
         public async Task DeleteProject_WhenUserDoesntOwnProject_ThrowsUnauthorizedException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
             var project = _fixture.Build<Project>()
                 .With(x => x.IsActive, true)
                 .Without(x => x.CalendarEvents)
@@ -277,7 +277,7 @@ namespace timer_app_tests.GatewayTests
         public async Task DeleteProject_WhenArchived_ThrowsArchivedException()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .Without(x => x.CalendarEvents)
@@ -298,7 +298,7 @@ namespace timer_app_tests.GatewayTests
         public async Task DeleteProject_WhenCalled_DeletesProject()
         {
             // Arrange
-            var userId = _fixture.Create<int>();
+            var userId = _fixture.Create<string>();
 
             var project = _fixture.Build<Project>()
                 .With(x => x.UserId, userId)

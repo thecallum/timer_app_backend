@@ -16,7 +16,7 @@ namespace timer_app.Factories
             };
         }
 
-        public static Project ToDb(this CreateProjectRequest request, int userId)
+        public static Project ToDb(this CreateProjectRequest request, string userId)
         {
             return new Project
             {
@@ -27,7 +27,7 @@ namespace timer_app.Factories
             };
         }
 
-        public static CalendarEvent ToDb(this CreateEventRequest request, int userId)
+        public static CalendarEvent ToDb(this CreateEventRequest request, string userId)
         {
             return new CalendarEvent
             {
