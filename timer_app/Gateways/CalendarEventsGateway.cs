@@ -19,18 +19,13 @@ namespace timer_app.Gateway
         public async Task<IEnumerable<CalendarEvent>> GetAllEvents(string userId, DateTime? startTime, DateTime? endTime)
         {
             var query = _context.CalendarEvents
-                .Include(x => x.Project)
+                .AsNoTracking()
                 .Where(x => x.UserId == userId);
 
             if (startTime != null)
             {
                 // event occurs within window
-                query = query
-                    .Where(x =>
-                        (x.StartTime < startTime && x.EndTime > endTime) || // event starts before, and ends after
-                        (x.StartTime > startTime && x.StartTime < endTime) || // events starts within window
-                        (x.EndTime > startTime && x.EndTime < endTime)  // events ends within window
-                );
+                query = query.Where(x => x.StartTime < endTime && x.EndTime > startTime);
             }
 
             return await query.ToListAsync();
