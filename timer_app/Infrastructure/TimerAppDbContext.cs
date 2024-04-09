@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 
 namespace timer_app.Infrastructure
 {
@@ -15,6 +16,11 @@ namespace timer_app.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Project>().OwnsOne(p => p.ProjectColor);
+
+
+            modelBuilder.Entity<CalendarEvent>()
+            .HasIndex(b => new { b.UserId, b.StartTime, b.EndTime })
+            .HasDatabaseName("IX_Event_Start_End");
         }
     }
 }

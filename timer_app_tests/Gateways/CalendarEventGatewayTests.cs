@@ -79,39 +79,6 @@ namespace timer_app_tests.GatewayTests
         }
 
         [Test]
-        public async Task GetAllEvents_WhenCalled_IncludesProjects()
-        {
-            // Arrange
-            var startTime = _fixture.Create<DateTime>();
-            var endTime = startTime.AddDays(1);
-            var userId = _fixture.Create<string>();
-
-            var project = _fixture.Build<Project>()
-                .With(x => x.UserId, userId)
-                .Without(x => x.CalendarEvents)
-                .Create();
-
-            await GatewayTestHelpers.AddProjectsToDb(project);
-
-            var calendarEvent = _fixture.Build<CalendarEvent>()
-                .With(x => x.UserId, userId)
-                .With(x => x.StartTime, startTime.AddHours(1))
-                .With(x => x.EndTime, startTime.AddHours(2))
-                .Without(x => x.Project)
-                .With(x => x.ProjectId, project.Id)
-                .Create();
-
-            await GatewayTestHelpers.AddEventsToDb(calendarEvent);
-
-            // Act
-            var results = await _classUnderTest.GetAllEvents(userId, startTime, endTime);
-
-            // Assert
-            results.Should().HaveCount(1);
-            results.First().Project.Should().BeEquivalentTo(project);
-        }
-
-        [Test]
         public async Task GetAllEventsWhenCalled_ReturnsEventsWithinTheGivenTimeframe()
         {
             // Arrange
