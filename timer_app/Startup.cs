@@ -60,8 +60,11 @@ public class Startup
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain");
-                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience_AccessToken");
+                options.Authority = Environment.GetEnvironmentVariable("Auth0_Domain")
+                    ?? Configuration.GetValue<string>("Auth0_Domain");
+
+                options.Audience = Environment.GetEnvironmentVariable("Auth0_Audience_AccessToken")
+                    ?? Configuration.GetValue<string>("Auth0_Audience_AccessToken");
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -124,7 +127,6 @@ public class Startup
         app.UseRouting();
 
         app.UseAuthentication();
-
         app.UseAuthorization();
         app.UseMiddleware<UserMiddleware>();
 
@@ -136,5 +138,6 @@ public class Startup
                 await context.Response.WriteAsync("Welcome to running ASP.NET Core on AWS Lambda");
             });
         });
+
     }
 }
